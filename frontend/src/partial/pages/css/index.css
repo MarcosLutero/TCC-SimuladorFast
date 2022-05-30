@@ -1,0 +1,33 @@
+.paginaInicial{
+    margin-top: 100px;
+  }
+  .titulo, .botao, .configuracoes {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  h2, button {
+    font-family: "Shadows Into Light";
+  }
+  
+  h2{
+    font-size: 30px;
+  }
+  
+  button{
+    font-size: 20px;
+  }
+
+  .botoes {
+    width: 100px;
+    height: 50px;
+    display: inline-block;
+}
+
+.informacoes_img{
+  margin: 20px 0 0 50px;
+  text-align: left;
+  font-size: 20px;
+}
