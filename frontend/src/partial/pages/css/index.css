@@ -1,32 +1,70 @@
-.paginaInicial{
-    margin-top: 100px;
-  }
-  .titulo, .botao, .configuracoes {
-    display: flex;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  h2, button {
-    font-family: "Shadows Into Light";
-  }
-  
-  h2{
-    font-size: 30px;
-  }
-  
-  button{
-    font-size: 20px;
-  }
-
-  .botoes {
-    width: 100px;
-    height: 50px;
-    display: inline-block;
+.paginaInicial {
+  position: absolute;
+  top: 40%;
+  left: 40%;
+}
+.titulo,
+.botao,
+.configuracoes {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 
-.informacoes_img{
+h2,
+button {
+  font-family: "Shadows Into Light";
+}
+
+h2 {
+  font-size: 30px;
+}
+
+button {
+  font-size: 20px;
+}
+
+.norte,
+.nordeste,
+.sul, .sudeste {
+  position: absolute;
+  opacity: 0.5;
+  width: 25px;
+  border-radius: 35px;
+}
+
+.norte {
+  background-color: red;
+  left: 400px;
+  top: 350px;
+}
+
+.nordeste {
+  background-color: blue;
+  left: 350px;
+  top: 300px;
+}
+
+.sul {
+  background-color: black;
+  left: 330px;
+  top: 350px;
+ 
+}
+
+.sudeste {
+  background-color: green;
+  left: 370px;
+  top: 400px;
+}
+.botoes {
+  width: 100px;
+  height: 50px;
+  display: inline-block;
+}
+
+.informacoes_img {
   margin: 20px 0 0 50px;
   text-align: left;
   font-size: 20px;
