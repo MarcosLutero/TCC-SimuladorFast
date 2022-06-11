@@ -1,32 +1,17 @@
 import React from "react";
+import { Col, Row } from "react-bootstrap";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PaginaInicial from "./partial/pages/js/PaginaInicial"
-import { Col, Row } from 'react-bootstrap';
+import Quiz from "./partial/pages/js/PaginaQuiz";
 
-class App extends React.Component {
-  state = {
-    Pagina: PaginaInicial,
-  };
+class App extends React.Component { 
   render() {
-    const Pagina = this.state.Pagina;
     return (
       <>
         <BrowserRouter>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <Row>
-                  <Col>
-                    <Pagina
-                      setPagina={(Pagina) => {
-                        this.setState({ Pagina });
-                      }}
-                    />
-                  </Col>
-                </Row>
-              }
-            />
+            <Route path="/" element={ <PaginaInicial /> } />
+            <Route path="/quiz" element={<Quiz />} />
           </Routes>
         </BrowserRouter>
       </>

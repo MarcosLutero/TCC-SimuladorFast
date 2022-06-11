@@ -2,33 +2,30 @@ import React from 'react'
 import "../css/index.css"
 import { Button } from "react-bootstrap"
 import PaginaQuiz from './PaginaQuiz'
+import { Link } from 'react-router-dom'
 
 
 class PaginaInicial extends React.Component {
   render() {
     return (
-      <>
-        <div className='paginaInicial'>
-          <div className='titulo'>
-            <h2>
-              Simulador de Exame A-FAST
-            </h2>
-          </div>
-          <div className='botao'>
-            <Button
-              variant="primary"
-              className="btn-primary"
-              size="sm"
-              onClick={() => this.props.setPagina(PaginaQuiz)}
-            >
-              Começar
-            </Button>
-          </div>
-          <div className='configuracoes'>
-            <p>Configurações</p>
-          </div>
+      <div className='paginaInicial'>
+        <div className='titulo'>
+          <h2>
+            Simulador de Exame A-FAST
+          </h2>
         </div>
-      </>
+        <div className='botao'>
+          <Link 
+            className="btn btn-primary btn-sm" 
+            to={'/quiz'}
+          >
+            Começar
+          </Link>
+        </div>
+        <div className='configuracoes'>
+          <small>Configurações</small>
+        </div>
+      </div>
     )
   }
 }

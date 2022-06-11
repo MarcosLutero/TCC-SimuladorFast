@@ -38,25 +38,28 @@ button {
   background-color: red;
   left: 400px;
   top: 350px;
+  opacity: 0.1;
 }
 
 .nordeste {
   background-color: blue;
   left: 350px;
   top: 300px;
+  opacity: 0.1;
 }
 
 .sul {
   background-color: black;
   left: 330px;
   top: 350px;
- 
+  opacity: 0.1;
 }
 
 .sudeste {
   background-color: green;
   left: 370px;
   top: 400px;
+  opacity: 0.1;
 }
 .botoes {
   width: 100px;

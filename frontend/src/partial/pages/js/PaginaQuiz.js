@@ -1,42 +1,56 @@
 import React from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import gatinho from "../../img/gatinho.jpeg";
-import foto1 from "../../img/animal-001-j1.jpg";
-import foto2 from "../../img/animal-001-j2.jpg";
-import foto3 from "../../img/animal-001-j3.jpg";
-import foto4 from "../../img/animal-001-j4.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
-import PaginaInicial from "./PaginaInicial";
+import { Link } from "react-router-dom";
+import axios from "axios";
+
+const CAMINHO_ARQUIVOS = '/home/jr/tcc/arquivos';
 class PaginaQuiz extends React.Component {
-  
+
   state = {
-    selected: 0,
-    imgs: [gatinho, foto1, foto2, foto3, foto4],
-    id: 1,
-    cadastro: "25/05/2022",
+    selectedAnimal: 0,
+    selectedArea: 0,
+    perfil: gatinho,
     tempo: 120,
-    pergunta: "Tem liquido?",
-    timer: null
+    timer: null,
+    animais: []
   };
 
   flag = false;
-  componentDidMount(){
-    if (!this.flag) this.setState({timer: setInterval(() => {
-      if (this.state.tempo > 0) {
-       this.setState(state => ({tempo: state.tempo - 1}))
-      }
-    }, 1000) });
+
+  getAnimais() {
+    axios.get('http://localhost:8080/sortear-animais/2')
+      .then(({ data }) => {
+        this.setState({ animais: data })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  componentDidMount() {
+    if (!this.flag) this.setState({
+      timer: setInterval(() => {
+        if (this.state.tempo > 0) {
+          this.setState(state => ({ tempo: state.tempo - 1 }))
+        }
+      }, 1000)
+    });
     this.flag = true;
   }
 
-  componentWillUnmount(){
-    if (this.state.timer)
-    clearInterval(this.state.timer);
+  componentWillUnmount() {
+    this.getAnimais()
+    if (this.state.timer) {
+      clearInterval(this.state.timer);
+    }
+
   }
 
 
@@ -50,93 +64,95 @@ class PaginaQuiz extends React.Component {
   }
 
   render() {
+    const selectedAnimal = this.state.animais[this.state.selectedAnimal];
     return (
-      <>
-        <div className="row mt-5 div_principal">
-          <div className="col-6 pt-4 text-center">
-            <div className="">
-              <div className="botoes">
-                <Button>
-                  <FontAwesomeIcon icon={faChevronLeft} />
-                </Button>
-              </div>
-              <div className="botoes">
-                <Button>
-                  <FontAwesomeIcon icon={faChevronRight} />
-                </Button>
-              </div>
+      <div className="row mt-5 div_principal">
+        <div className="col-6 pt-4 text-center">
+          <div className="">
+            <div className="botoes">
+              <Button>
+                <FontAwesomeIcon icon={faChevronLeft} />
+              </Button>
             </div>
-            <div
-              className="norte"
-              onClick={() => {
-                this.setState({ selected: 1 });
-              }}
-            >
-              .
-            </div>
-            <div
-              className="nordeste"
-              onClick={() => {
-                this.setState({ selected: 2 });
-              }}
-            >
-              .
-            </div>
-            <div
-              className="sul"
-              onClick={() => {
-                this.setState({ selected: 3 });
-              }}
-            >
-              .
-            </div>
-            <div
-              className="sudeste"
-              onClick={() => {
-                this.setState({ selected: 4 });
-              }}
-            >
-              .
-            </div>
-            <img src={gatinho} alt="" />
-            <div className="informacoes_img">
-              <p> id: {this.state.id}</p>
-              <p>cadastro: {this.state.cadastro}</p>
+            <div className="botoes">
+              <Button>
+                <FontAwesomeIcon icon={faChevronRight} />
+              </Button>
             </div>
           </div>
-          <div className="col-6 pt-4 text-center">
-            <div className="botao_voltar">
-              <Button
-              onClick={() => this.props.setPagina(PaginaInicial)}
-              >Voltar</Button>
-            </div>
-            <div className="img-return">
-              <img
-              alt=""
-                src={this.state.imgs[this.state.selected]}
-              />
-            </div>
-            <div>
-              <p>Tempo:{this.formatarTempo()}</p>
-            </div>
-            <div className="pergunta">
-              <h4>{this.state.pergunta}</h4>
-            </div>
-            <div className="resposta">
-              <Container className="mt-3">
-                <Row className="mb-5">
-                  <Col xs={6}>
-                    <Button>Não</Button>
-                  </Col>
-                  <Col xs={6}>
-                    <Button>Sim</Button>
-                  </Col>
-                </Row>
-              </Container>
-            </div>
+          <div
+            title='HD'
+            className="norte"
+            onClick={() => {
+              this.setState({ selectedArea: 0 });
+            }}
+          >
+            .
+          </div>
+          <div
+            title='ER'
+            className="nordeste"
+            onClick={() => {
+              this.setState({ selectedArea: 1 });
+            }}
+          >
+            .
+          </div>
+          <div
+            title='CC'
+            className="sul"
+            onClick={() => {
+              this.setState({ selectedArea: 2 });
+            }}
+          >
+            .
+          </div>
+          <div
+            title='HR'
+            className="sudeste"
+            onClick={() => {
+              this.setState({ selectedArea: 3 });
+            }}
+          >
+            .
+          </div>
+          <img src={gatinho} className='img-fluid' alt="" />
+          <div className="informacoes_img">
+            <p> id: {this.state.animais.length ? selectedAnimal.id : 0}</p>
+            <p>cadastro: {this.state.animais.length ? selectedAnimal.cadastro : "N/A"}</p>
           </div>
         </div>
-      </>
+        <div className="col-6 pt-4 text-center">
+          <div className="botao_voltar">
+            <Link to={'/'}>Voltar</Link>
+          </div>
+          <div className="img-return">
+            <img
+              alt="a"
+              className="img-fluid"
+              src={selectedAnimal ? selectedAnimal.imgs[this.state.selectedArea].caminho : ""}
+            />
+          </div>
+          <div>
+            <p>Tempo:{this.formatarTempo()}</p>
+          </div>
+          <div className="pergunta">
+            <h4>Tem liquido?</h4>
+          </div>
+          <div className="resposta">
+            <Container className="mt-3">
+              <Row className="mb-5">
+                <Col xs={6}>
+                  <Button>Sim</Button>
+                </Col>
+                <Col xs={6}>
+                  <Button>Não</Button>
+                </Col>
+              </Row>
+            </Container>
+          </div>
+        </div>
+      </div>
     );
   }
 }
