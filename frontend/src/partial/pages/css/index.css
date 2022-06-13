@@ -21,54 +21,68 @@ h2 {
   font-size: 30px;
 }
 
-button {
-  font-size: 20px;
+.div-geral {
+  position: relative;
+  border: 1px black solid;
+  overflow: hidden;
+
+}
+
+.imagem {
+  width: 550px;
+  height: 350px;
+  object-fit: fill;
+}
+
+.imagem-esquerda {
+  width: 550px;
+  position: static;
 }
 
 .norte,
 .nordeste,
-.sul, .sudeste {
+.sul,
+.sudeste {
   position: absolute;
-  opacity: 0.5;
-  width: 25px;
-  border-radius: 35px;
+  height: auto;
+  border-radius: 25px;
 }
 
 .norte {
   background-color: red;
-  left: 400px;
-  top: 350px;
-  opacity: 0.1;
+  top: 180px;
+  left: 180px;
+  width: 25px;
+  opacity: 0.3;
 }
 
 .nordeste {
   background-color: blue;
-  left: 350px;
-  top: 300px;
-  opacity: 0.1;
+  top: 150px;
+  left: 240px;
+  width: 25px;
+  opacity: 0.3;
 }
 
 .sul {
   background-color: black;
-  left: 330px;
-  top: 350px;
-  opacity: 0.1;
+  top: 180px;
+  left: 250px;
+  width: 25px;
+  opacity: 0.3;
 }
 
 .sudeste {
   background-color: green;
-  left: 370px;
-  top: 400px;
-  opacity: 0.1;
+  top: 140px;
+  left: 180px;
+  width: 25px;
+  opacity: 0.3;
 }
+
 .botoes {
   width: 100px;
   height: 50px;
   display: inline-block;
 }
 
-.informacoes_img {
-  margin: 20px 0 0 50px;
-  text-align: left;
-  font-size: 20px;
-}

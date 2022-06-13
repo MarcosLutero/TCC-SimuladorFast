@@ -1,5 +1,4 @@
 import React from "react";
-import { Col, Row } from "react-bootstrap";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PaginaInicial from "./partial/pages/js/PaginaInicial"
 import Quiz from "./partial/pages/js/PaginaQuiz";

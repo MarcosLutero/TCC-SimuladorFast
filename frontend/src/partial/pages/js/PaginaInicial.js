@@ -1,7 +1,5 @@
 import React from 'react'
 import "../css/index.css"
-import { Button } from "react-bootstrap"
-import PaginaQuiz from './PaginaQuiz'
 import { Link } from 'react-router-dom'
 
 
