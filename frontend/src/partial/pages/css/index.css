@@ -28,21 +28,24 @@ h2 {
 
 }
 
-.imagem {
-  width: 550px;
-  height: 350px;
+.imagem {   
   object-fit: fill;
 }
 
-.imagem-esquerda {
-  width: 550px;
+.imagem-direita { 
+  max-height: 700;
+  max-width: 300;
   position: static;
 }
 
 .norte,
 .nordeste,
 .sul,
-.sudeste {
+.sudeste,
+.norteDog,
+.nordesteDog,
+.sulDog,
+.sudesteDog {
   position: absolute;
   height: auto;
   border-radius: 25px;
@@ -50,34 +53,66 @@ h2 {
 
 .norte {
   background-color: red;
-  top: 180px;
-  left: 180px;
+  top: 240px;
+  left: 210px;
   width: 25px;
-  opacity: 0.3;
+  opacity: 0;
 }
 
 .nordeste {
   background-color: blue;
-  top: 150px;
-  left: 240px;
+  top: 210px;
+  left: 370px;
   width: 25px;
-  opacity: 0.3;
+  opacity: 0;
 }
 
 .sul {
   background-color: black;
-  top: 180px;
-  left: 250px;
+  top: 260px;
+  left: 290px;
   width: 25px;
-  opacity: 0.3;
+  opacity: 0;
 }
 
 .sudeste {
   background-color: green;
-  top: 140px;
-  left: 180px;
+  top: 180px;
+  left: 280px;
   width: 25px;
-  opacity: 0.3;
+  opacity: 0;
+}
+
+.norteDog {
+  background-color: red;
+  top: 190px;
+  left: 150px; 
+  width: 25px;
+  opacity: 0;
+}
+
+.nordesteDog {
+  background-color: blue;
+  top: 200px;
+  left: 270px;
+  width: 25px;
+  opacity: 0;
+}
+
+.sulDog {
+  background-color: black;
+  top: 230px;
+  left: 220px;
+  width: 25px;
+  opacity: 0;
+}
+
+.sudesteDog {
+  background-color: green;
+  top: 160px;
+  left: 220px;
+  width: 25px;
+  opacity: 0;
 }
 
 .botoes {

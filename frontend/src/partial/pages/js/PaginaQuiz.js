@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, Card, Col, Container, Image, Row } from "react-bootstrap";
 import gatinho from "../../img/gatinho.jpeg";
+import doguinio from "../../img/doguineo.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
@@ -10,22 +11,60 @@ import "../css/index.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-const CAMINHO_ARQUIVOS = "/home/jr/tcc/arquivos";
+var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+const JANELAS = [
+  {
+    title: "HD",
+    className: "nordeste",
+    classNameDog: "nordesteDog",
+    janela: 0
+  },
+  {
+    title: "ER",
+    className: "sul",
+    classNameDog: "sulDog",
+    janela: 1
+  },
+  {
+    title: "CC",
+    className: "norte",
+    classNameDog: "norteDog",
+    janela: 2
+  },
+  {
+    title: "HR",
+    className: "sudeste",
+    classNameDog: "sudesteDog",
+    janela: 3
+  }
+]
+
+const API_URL = "http://localhost:8080"
+const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
+
 class PaginaQuiz extends React.Component {
-  state = {
-    selectedAnimal: 0,
-    selectedArea: 0,
-    perfil: gatinho,
-    tempo: 120,
-    timer: null,
-    animais: [],
-  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      selectedAnimal: 0,
+      selectedArea: -1,
+      perfil: gatinho,
+      tempo: 120,
+      timer: null,
+      animais: [],
+    };
+
+  }
 
   flag = false;
 
   getAnimais() {
+    let qtdAnimais = window.location.href.split("qtd=")[1] || 1
     axios
-      .get("http://localhost:8080/sortear-animais/2")
+      .get(`${API_URL}/sortear-animais/${qtdAnimais}`)
       .then(({ data }) => {
         this.setState({ animais: data });
       })
@@ -63,107 +102,106 @@ class PaginaQuiz extends React.Component {
   }
 
   render() {
-    const selectedAnimal = this.state.animais[this.state.selectedAnimal];
+    const { selectedAnimal, selectedArea } = this.state;
+    const animal = this.state.animais[selectedAnimal];
     return (
       <Container fluid className="p-0 m-0">
-        <Row className="m-5">
+        <div className='titulo col-12 my-2'>
+          <h2>
+            Simulador de Exame A-FAST
+          </h2>
+        </div>
+        <Row className="m-5 mt-0">
           <Col
-            lg={{ offset: 1, span: 4 }}
+            lg={6}
+            className="align-items-center justify-content-center text-center"
+          >
+            <div className="row col-12 col-12"> 
+                <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto btn-sm mb-2'>Voltar</Link> 
+                <div className="col-lg-6 mt-1">Tempo:{this.formatarTempo()}</div> 
+            </div>
+            <Image
+              alt="imagem"
+              className="  m-0 p-0 imagem-direita"
+              style={{
+                maxWidth: "440px",
+                width: "auto",
+                minHeight: "390px"
+              }}
+              src={animal && this.state.selectedArea !== -1 ? `${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}` : ""}
+            /> 
+            <div class="custom-control custom-switch">
+              <input type="checkbox" class="custom-control-input" id="customSwitch1" />
+              <label class="custom-control-label" for="customSwitch1">Tem liquido?</label>
+            </div>
+          </Col>
+          <Col
+            lg={6}
+            md={12}
+            sm={12}
             className="align-items-center justify-content-center text-center"
           >
             <Row className="mb-2">
               <Col className="d-flex justify-content-around">
-                <Button>
+                <Button
+                  disabled={selectedAnimal === 0}
+                  onClick={() => {
+                    this.setState({ selectedAnimal: selectedAnimal - 1 })
+                  }}
+                >
                   <FontAwesomeIcon icon={faChevronLeft} />
                   &nbsp;&nbsp; ANTERIOR
                 </Button>
-                <Button>
+                <small className="mt-2">
+                  {this.state.selectedAnimal + 1}/{this.state.animais.length}
+                </small>
+                <Button
+                  disabled={selectedAnimal === this.state.animais.length - 1}
+                  onClick={() => {
+                    this.setState({ selectedAnimal: selectedAnimal + 1 })
+                  }}
+                >
                   <FontAwesomeIcon icon={faChevronRight} />
                   &nbsp;&nbsp; PROXIMA
                 </Button>
               </Col>
             </Row>
             <div className="div-geral">
-              <div
-                title="HD"
-                className="norte"
-                onClick={() => {
-                  this.setState({ selectedArea: 0 });
-                }}
-              >
-                .
+              <div style={{ position: "absolute", maxWidth: "200px", width: "auto" }}>
+                {JANELAS.map((item, _) =>
+                  <div
+                    title={item.title}
+                    className={animal && animal.tipo === "gato" ? item.className : item.classNameDog}
+                    onMouseOver={() => this.setState({ selectedArea: item.janela })}
+                    onMouseLeave={() => this.setState({ selectedArea: -1 })}
+                  >
+                    .
+                  </div>
+                )}
               </div>
-              <div
-                title="ER"
-                className="nordeste"
-                onClick={() => {
-                  this.setState({ selectedArea: 1 });
+              <Image
+                src={animal && animal.tipo === "gato" ? gatinho : doguinio}
+                className="mb-2"
+                alt="imagem"
+                style={{
+                  maxWidth: 805,
+                  maxHeight: 452
                 }}
-              >
-                .
-              </div>
-              <div
-                title="CC"
-                className="sul"
-                onClick={() => {
-                  this.setState({ selectedArea: 2 });
-                }}
-              >
-                .
-              </div>
-              <div
-                title="HR"
-                className="sudeste"
-                onClick={() => {
-                  this.setState({ selectedArea: 3 });
-                }}
-              >
-                .
-              </div>
-              <Image src={gatinho} className="mb-2 imagem imagem-esquerda" alt="imagem" />
+              />
             </div>
             <Card>
               <Card.Header className="bg-success text-white" >
-                <h1>INFORMAÇÕES</h1>
+                <h6>INFORMAÇÕES</h6>
               </Card.Header>
-              <Card.Body className="bg-info text-white">
-                <p> id: {this.state.animais.length ? selectedAnimal.id : 0}</p>
-                <p>
-                  cadastro:{" "}
-                  {this.state.animais.length ? selectedAnimal.cadastro : "N/A"}
+              <Card.Body className="bg-secondary text-white">
+                <p> 
+                  Id: {this.state.animais.length && animal ? animal.id : 0}
+                  <br />
+                  Cadastro:{" "}
+                  {this.state.animais.length && animal ? new Date(animal.cadastro).toLocaleString("pt-BR", options) : "N/A"}
                 </p>
               </Card.Body>
             </Card>
-          </Col>
-          <Col
-            lg={{ offset: 1, span: 4 }}
-            className="align-items-center justify-content-center text-center"
-          >
-            <Row>
-              <Link to={"/"}>Voltar</Link>
-            </Row>
-
-            <Image
-              alt="imagem"
-              className="img-fluid imagem imagem-direita m-0 p-0"
-              src={
-                selectedAnimal
-                  ? selectedAnimal.imgs[this.state.selectedArea].caminho
-                  : ""
-              }
-            />
-            <p>Tempo:{this.formatarTempo()}</p>
-
-            <div className="pergunta">
-              <h4>Tem liquido?</h4>
-            </div>
-            <Row className="mb-5">
-              <Col className="d-flex justify-content-around">
-                <Button className="bnt-lg">Sim</Button>
-
-                <Button className="bnt-lg">Não</Button>
-              </Col>
-            </Row>
           </Col>
         </Row>
       </Container>
