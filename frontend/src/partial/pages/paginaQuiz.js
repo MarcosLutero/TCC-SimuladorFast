@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Card, Col, Container, Image, Row } from "react-bootstrap";
-import gatinho from "../../img/gatinho.jpeg";
-import doguinio from "../../img/doguineo.jpeg";
+import gatinho from "../img/gatinho.jpeg";
+import doguinio from "../img/doguineo.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,

@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PaginaInicial from "./partial/pages/js/PaginaInicial"
-import Quiz from "./partial/pages/js/PaginaQuiz";
+import {PaginaInicial, Quiz, AdminAnimais} from "./partial/pages" 
 
 class App extends React.Component { 
   render() {
@@ -11,6 +10,7 @@ class App extends React.Component {
           <Routes>
             <Route path="/" element={ <PaginaInicial /> } />
             <Route path="/quiz" element={<Quiz />} />
+            <Route path="/admin/animais" element={<AdminAnimais /> } />
           </Routes>
         </BrowserRouter>
       </>
