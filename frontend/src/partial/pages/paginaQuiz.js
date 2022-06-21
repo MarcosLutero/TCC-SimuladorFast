@@ -4,7 +4,6 @@ import gatinho from "../img/gatinho.jpeg";
 import doguinio from "../img/doguineo.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
@@ -43,7 +42,7 @@ const JANELAS = [
 const API_URL = "http://localhost:8080"
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
-class PaginaQuiz extends React.Component {
+class paginaQuiz extends React.Component {
 
   constructor(props) {
     super(props);
@@ -205,4 +204,4 @@ class PaginaQuiz extends React.Component {
   }
 }
 
-export default PaginaQuiz;
+export default paginaQuiz;
