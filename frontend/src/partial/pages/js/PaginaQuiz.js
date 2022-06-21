@@ -55,6 +55,8 @@ class PaginaQuiz extends React.Component {
       tempo: 120,
       timer: null,
       animais: [],
+      score: 0,
+      
     };
 
   }
@@ -116,10 +118,12 @@ class PaginaQuiz extends React.Component {
             lg={6}
             className="align-items-center justify-content-center text-center"
           >
-            <div className="row col-12 col-12"> 
-                <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto btn-sm mb-2'>Voltar</Link> 
-                <div className="col-lg-6 mt-1">Tempo:{this.formatarTempo()}</div> 
+            <div className="row col-12"> 
+                <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto'>Voltar ao Lobby</Link> 
+                <button className="col-lg-3 btn btn-outline-primary btn-sm mx-auto">Tempo:{this.formatarTempo()}</button>
+                <button className="col-lg-3 btn btn-outline-primary btn-sm mx-auto" >score: {this.state.score}</button>
             </div>
+          
             <Image
               alt="imagem"
               className="  m-0 p-0 imagem-direita"
@@ -135,6 +139,7 @@ class PaginaQuiz extends React.Component {
               <label class="custom-control-label" for="customSwitch1">Tem liquido?</label>
             </div>
           </Col>
+       
           <Col
             lg={6}
             md={12}
@@ -143,15 +148,6 @@ class PaginaQuiz extends React.Component {
           >
             <Row className="mb-2">
               <Col className="d-flex justify-content-around">
-                <Button
-                  disabled={selectedAnimal === 0}
-                  onClick={() => {
-                    this.setState({ selectedAnimal: selectedAnimal - 1 })
-                  }}
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} />
-                  &nbsp;&nbsp; ANTERIOR
-                </Button>
                 <small className="mt-2">
                   {this.state.selectedAnimal + 1}/{this.state.animais.length}
                 </small>
