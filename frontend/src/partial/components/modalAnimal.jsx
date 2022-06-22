@@ -1,26 +1,24 @@
 import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
 import axios from 'axios';
-import ModalImagem from './modalImagem';
 
 const API_URL = "http://localhost:8080"
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "" }
-const DEFAULT_IMAGEM_DATA = { janela: "", temLiquido: false }
+const DEFAULT_IMAGEM_DATA = { janela: "", temLiquido: false, file: {}, caminho: "" }
 
 export default function ModalAnimal(props) {
 
     const [openModalAnimal, setOpenModalAnimal] = React.useState(false)
     const [openModalImagem, setOpenModalImagem] = React.useState(false)
-    const [hideModal, setHideModal] = React.useState(false)
     const [animalData, setAnimalData] = React.useState(DEFAULT_ANIMAL_DATA)
     const [imagemData, setImagemData] = React.useState(DEFAULT_IMAGEM_DATA)
     const [imagens, setImagens] = React.useState([])
     const [imgSelected, setImgSelected] = React.useState({})
     const [imgEdit, setImgEdit] = React.useState(false)
 
-    function getImagens(animal) {
-        let url = `${API_URL}/animal/imagens/${animal.id}`
+    function getImagens(idAnimal) {
+        let url = `${API_URL}/animal/imagens/${idAnimal}`
         axios.get(url)
             .then(resp => setImagens(resp.data["imgs"]))
             .catch(err => console.log(err))
@@ -33,7 +31,7 @@ export default function ModalAnimal(props) {
                 tipo: props.animal.tipo,
                 pontuacao: props.animal.pontuacao
             }
-            getImagens(props.animal)
+            getImagens(props.animal.id)
         }
         setAnimalData(temp)
         setOpenModalAnimal(true)
@@ -45,10 +43,13 @@ export default function ModalAnimal(props) {
             setImgSelected(img)
             setImagemData({
                 janela: img.janela,
-                temLiquido: img.temLiquido
+                temLiquido: img.temLiquido,
+                caminho: img.caminho,
+                file: {}
             })
             setImgEdit(true)
         } else {
+            setImgSelected({})
             setImagemData(DEFAULT_IMAGEM_DATA)
             setImgEdit(false)
         }
@@ -89,12 +90,20 @@ export default function ModalAnimal(props) {
             "content-type": "application/json"
         }
 
+        const formData = new FormData();
+        formData.append("imagem", {
+            janela: imagemData.janela,
+            temLiquido: imagemData.temLiquido
+        }); 
+        formData.append("file", imagemData.file);
+
         if (imgEdit) {
             url += imgSelected.id
-            axios.put(url, imagemData, { headers })
+            axios.put(url, formData, { headers })
                 .then((resp) => {
-                    getImagens(props.animal)
-                    setOpenModalImagem(false)
+                    getImagens(props.animal.id)
+                    setOpenModalImagem(true)
+                    setOpenModalAnimal(false)
                 })
                 .catch((err) => {
                     console.log(err);
@@ -103,10 +112,12 @@ export default function ModalAnimal(props) {
 
             return
         }
+        
+        
 
-        axios.post(url, imagemData)
+        axios.post(url, formData , { headers })
             .then((resp) => {
-                getImagens(props.animal)
+                getImagens(props.animal.id)
                 setOpenModalImagem(false)
             })
             .catch((err) => {
@@ -114,12 +125,21 @@ export default function ModalAnimal(props) {
             });
     }
 
+    function deletarImagem(img) {
+        let url = `${API_URL}/animal/${img.animal}/imagens/${img.id}`
+        axios.delete(url)
+        .then(resp => {
+            getImagens(img.animal) 
+        })
+        .catch(err => console.log(err))
+    }
+
     const action = props.edit ? "Editar" : "Cadastrar"
 
     return <div>
         {props.iconButton ?
             <i
-                class="bi-info-circle text-primary"
+                className="bi-info-circle text-primary"
                 onClick={onOpenModalAnimal}
                 style={{ cursor: "pointer" }}
             /> :
@@ -135,94 +155,95 @@ export default function ModalAnimal(props) {
                 <h3>{action} Animal {props.edit ? `#${props.animal.id}` : ""}</h3>
             </Modal.Header>
             <Modal.Body>
-                {hideModal ? <div /> :
-                    <div>
-                        <div className='row'>
-                            <div class="form-group col-lg-6 col-sm-12">
-                                <label>Tipo de animal</label>
-                                <input
-                                    className="form-control"
-                                    onChange={(e) => {
-                                        setAnimalData({ tipo: e.target.value, pontuacao: animalData.pontuacao })
-                                    }}
-                                    value={animalData["tipo"]}
-                                />
-                            </div>
-                            <div class="form-group col-lg-6 col-sm-12">
-                                <label>Pontuação</label>
-                                <input
-                                    className="form-control"
-                                    type='number'
-                                    onChange={(e) => {
-                                        let pontuacao = e.target.value
-                                        if (pontuacao < 0 || pontuacao > 4) return
-                                        setAnimalData({ pontuacao, tipo: animalData.tipo })
-                                    }}
-                                    value={animalData.pontuacao}
-                                />
-                            </div>
+                <div>
+                    <div className='row'>
+                        <div className="form-group col-6">
+                            <label>Tipo de animal</label>
+                            <input
+                                className="form-control"
+                                onChange={(e) => {
+                                    setAnimalData({ tipo: e.target.value, pontuacao: animalData.pontuacao })
+                                }}
+                                value={animalData["tipo"]}
+                            />
                         </div>
-
-                        <div className='d-flex flex-row-reverse'>
-                            <Button
-                                className='mt-2 float-right'
-                                size='sm'
-                                onClick={createUpdateAnimal}
-                            >
-                                {action}
-                            </Button>
+                        <div className="form-group col-6">
+                            <label>Pontuação</label>
+                            <input
+                                className="form-control"
+                                type='number'
+                                onChange={(e) => {
+                                    let pontuacao = e.target.value
+                                    if (pontuacao < 0 || pontuacao > 4) return
+                                    setAnimalData({ pontuacao, tipo: animalData.tipo })
+                                }}
+                                value={animalData.pontuacao}
+                            />
                         </div>
-
-                        {props.edit ? <div>
-                            <h5 className='mt-2'>
-                                Imagens {'  '}
-                                <button
-                                    className='btn btn-sm btn-primary ml-1'
-                                    onClick={() => onOpenModalImagem()}
-                                >
-                                    Novo
-                                </button>
-                            </h5>
-                            <table className='table table-striped'>
-                                <thead>
-                                    <tr>
-                                        <th>Janela</th>
-                                        <th>Tem liquído?</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {imagens.map(img => <tr>
-                                        <td>{img.janela}</td>
-                                        <td>{img.temLiquido ? "Sim" : "Não"}</td>
-                                        <td>
-                                            <div className='d-flex justify-content-around'>
-                                                <i
-                                                    class="bi-info-circle text-success"
-                                                    style={{ cursor: "pointer" }}
-                                                    onClick={() => onOpenModalImagem(img)}
-                                                />
-                                                <i
-                                                    class="bi-image text-success"
-                                                    style={{ cursor: "pointer" }}
-                                                    onClick={() => {
-                                                        let url = `${CAMINHO_ARQUIVOS}${img.caminho}`
-                                                        window.open(url, "_blank")
-                                                    }}
-                                                />
-                                                <i
-                                                    class="bi-trash text-danger"
-                                                    style={{ cursor: "pointer" }}
-                                                />
-                                            </div>
-                                        </td>
-                                    </tr>)}
-                                </tbody>
-                            </table>
-                        </div> : <div />}
-
                     </div>
-                }
+
+                    <div className='d-flex flex-row-reverse'>
+                        <Button
+                            className='mt-2 float-right'
+                            size='sm'
+                            onClick={createUpdateAnimal}
+                        >
+                            {action}
+                        </Button>
+                    </div>
+
+                    {props.edit ? <div>
+                        <h5 className='mt-2'>
+                            Imagens {'  '}
+                            <button
+                                className='btn btn-sm btn-primary ml-1'
+                                onClick={() => onOpenModalImagem()}
+                            >
+                                Novo
+                            </button>
+                        </h5>
+                        <table className='table table-striped'>
+                            <thead>
+                                <tr>
+                                    <th>Arquivo</th>
+                                    <th>Janela</th>
+                                    <th>Tem liquído?</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {imagens.map((img, _) => <tr key={_}>
+                                    <td>{img.caminho.substring(0,16)} {img.caminho.length > 16? "...": ""} </td>
+                                    <td>{img.janela}</td>
+                                    <td>{img.temLiquido ? "Sim" : "Não"}</td>
+                                    <td>
+                                        <div className='d-flex justify-content-around'>
+                                            <i
+                                                className="bi-info-circle text-success"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => onOpenModalImagem(img)}
+                                            />
+                                            <i
+                                                className="bi-image text-success"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => {
+                                                    let url = `${CAMINHO_ARQUIVOS}${img.caminho}`
+                                                    window.open(url, "_blank")
+                                                }}
+                                            />
+                                            <i
+                                                className="bi-trash text-danger"
+                                                style={{ cursor: "pointer" }}
+                                                onClick={() => deletarImagem(img)}
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>)}
+                            </tbody>
+                        </table>
+                    </div> : <div />}
+
+                </div>
             </Modal.Body>
         </Modal>
         <Modal
@@ -236,7 +257,7 @@ export default function ModalAnimal(props) {
             </Modal.Header>
             <Modal.Body>
                 <div className='row'>
-                    <div class="form-group col-lg-6 col-sm-12">
+                    <div className="form-group col-6">
                         <label>Janela</label>
                         <input
                             className="form-control"
@@ -249,13 +270,15 @@ export default function ModalAnimal(props) {
                             value={imagemData.janela}
                         />
                     </div>
-                    <div class="form-group col-lg-6 col-sm-12">
+                    <div className="form-group col-6">
                         <label>Tem Liquido?</label>
                         <select
                             className='form-control'
+                            defaultValue={imagemData.temLiquido}
                             onChange={(e) => {
+                                console.log("liquido", e.target.value === "true")
                                 setImagemData({
-                                    temLiquido: e.target.value == "true",
+                                    temLiquido: e.target.value === "true",
                                     janela: imagemData.janela
                                 })
                             }}
@@ -264,19 +287,20 @@ export default function ModalAnimal(props) {
                             <option value='true'>Sim</option>
                         </select>
                     </div>
-                    <div class="form-group col-lg-12">
-                        <label>Imagem</label>
+                    <div className="form-group col-12 mt-3">
+                        <label>Imagem</label><br />
+
+                        <small className='text-secondary'>Atual: {imgSelected.caminho}</small>
                         <input
                             className="form-control"
                             type='file'
                             onChange={(e) => {
                                 setImagemData({
-                                    file: e.target.value,
+                                    file: e.target.files[0],
                                     janela: imagemData.janela,
                                     temLiquido: imagemData.temLiquido
                                 })
                             }}
-                            value={imagemData.caminho}
                         />
                     </div>
                 </div>

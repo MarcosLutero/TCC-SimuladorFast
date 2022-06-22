@@ -36,7 +36,7 @@ export default class AdminAnimais extends React.Component {
       });
   }
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.getAnimais();
   }
 
@@ -57,8 +57,8 @@ export default class AdminAnimais extends React.Component {
             <tr>
               <th>#</th>
               <th>Tipo</th>
-              <th>Cadastro</th>
               <th>Pontuação</th>
+              <th>Cadastro</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -66,8 +66,8 @@ export default class AdminAnimais extends React.Component {
             {this.state.animais.map(animal => <tr key={animal.id} >
               <td>{animal.id}</td>
               <td>{animal.tipo}</td>
-              <td>{new Date(animal.cadastro).toLocaleString("pt-BR", options)}</td>
               <td>{animal.pontuacao}</td>
+              <td>{new Date(animal.cadastro).toLocaleString("pt-BR", options)}</td>
               <td>
                 <div className="d-flex justify-content-around">
                   <ModalAnimal
@@ -77,7 +77,7 @@ export default class AdminAnimais extends React.Component {
                     onCreateEdit={() => this.getAnimais()}
                   />
                   <i
-                    class="bi-trash text-danger"
+                    className="bi-trash text-danger"
                     style={{ cursor: "pointer" }}
                     onClick={() => this.deletarAnimal(animal)}
                   />
