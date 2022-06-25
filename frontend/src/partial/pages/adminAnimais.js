@@ -56,7 +56,7 @@ export default class AdminAnimais extends React.Component {
           <thead>
             <tr>
               <th>#</th>
-              <th>Tipo</th>
+              <th>Espécie</th>
               <th>Pontuação</th>
               <th>Cadastro</th>
               <th>Ações</th>

@@ -1,10 +1,8 @@
 import React from "react";
-import { Button, Card, Col, Container, Image, Row } from "react-bootstrap";
-import gatinho from "../img/gatinho.jpeg";
-import doguinio from "../img/doguineo.jpeg";
+import { Button, Card, Col, Container, Image, Modal, Row } from "react-bootstrap"; 
+import doguinio from "../img/doguineo.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronLeft,
+import { 
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
@@ -16,26 +14,26 @@ var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
 const JANELAS = [
   {
     title: "HD",
-    className: "nordeste",
-    classNameDog: "nordesteDog",
+    className: "norte",
+    classNameDog: "norte",
     janela: 0
   },
   {
-    title: "ER",
-    className: "sul",
-    classNameDog: "sulDog",
+    title: "HR",
+    className: "oeste",
+    classNameDog: "oeste",
     janela: 1
   },
   {
-    title: "CC",
-    className: "norte",
-    classNameDog: "norteDog",
+    title: "ER",
+    className: "leste",
+    classNameDog: "leste",
     janela: 2
   },
   {
-    title: "HR",
-    className: "sudeste",
-    classNameDog: "sudesteDog",
+    title: "CC",
+    className: "sul",
+    classNameDog: "sul",
     janela: 3
   }
 ]
@@ -51,10 +49,12 @@ class PaginaQuiz extends React.Component {
     this.state = {
       selectedAnimal: 0,
       selectedArea: -1,
-      perfil: gatinho,
-      tempo: 120,
+      perfil: doguinio,
+      tempo: 180,
       timer: null,
+      score: 0,
       animais: [],
+      modalFeedback: false
     };
 
   }
@@ -74,11 +74,14 @@ class PaginaQuiz extends React.Component {
   }
 
   componentDidMount() {
+    this.getAnimais();
     if (!this.flag)
       this.setState({
         timer: setInterval(() => {
           if (this.state.tempo > 0) {
             this.setState((state) => ({ tempo: state.tempo - 1 }));
+          } else {
+            this.darFeedback()
           }
         }, 1000),
       });
@@ -86,7 +89,6 @@ class PaginaQuiz extends React.Component {
   }
 
   componentWillUnmount() {
-    this.getAnimais();
     if (this.state.timer) {
       clearInterval(this.state.timer);
     }
@@ -101,11 +103,15 @@ class PaginaQuiz extends React.Component {
     return `${minutes}:${seconds}`;
   }
 
+  darFeedback() {
+    this.setState({ modalFeedback: true })
+  }
+
   render() {
     const { selectedAnimal, selectedArea } = this.state;
-    const animal = this.state.animais[selectedAnimal];
+    let animal = this.state.animais[selectedAnimal];
     return (
-      <Container fluid className="p-0 m-0">
+      <Container fluid className="p-0 m-0 bg-dark text-light pb-5">
         <div className='titulo col-12 my-2'>
           <h2>
             Simulador de Exame A-FAST
@@ -116,10 +122,20 @@ class PaginaQuiz extends React.Component {
             lg={6}
             className="align-items-center justify-content-center text-center"
           >
-            <div className="row col-12 col-12"> 
-                <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto btn-sm mb-2'>Voltar</Link> 
-                <div className="col-lg-6 mt-1">Tempo:{this.formatarTempo()}</div> 
+            <div className="row col-12 col-12">
+              <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto btn-sm mb-2'>Voltar</Link>
+              <div className="col-lg-6 mt-1">
+                Tempo:{this.formatarTempo()} /
+                Score: {this.state.score}
+              </div>
             </div>
+            {this.state.selectedArea !== -1 ?
+              <div class="custom-control custom-switch my-3">
+                <label ><strong>{!animal.imgs[selectedArea].clicked ? "Não" : ""} Tem liquido</strong></label>
+              </div> :
+              <div />
+            }
+            {animal && this.state.selectedArea !== -1? 
             <Image
               alt="imagem"
               className="  m-0 p-0 imagem-direita"
@@ -128,12 +144,8 @@ class PaginaQuiz extends React.Component {
                 width: "auto",
                 minHeight: "390px"
               }}
-              src={animal && this.state.selectedArea !== -1 ? `${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}` : ""}
-            /> 
-            <div class="custom-control custom-switch">
-              <input type="checkbox" class="custom-control-input" id="customSwitch1" />
-              <label class="custom-control-label" for="customSwitch1">Tem liquido?</label>
-            </div>
+              src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
+            />: "Procure as areas"}
           </Col>
           <Col
             lg={6}
@@ -143,26 +155,16 @@ class PaginaQuiz extends React.Component {
           >
             <Row className="mb-2">
               <Col className="d-flex justify-content-around">
-                <Button
-                  disabled={selectedAnimal === 0}
-                  onClick={() => {
-                    this.setState({ selectedAnimal: selectedAnimal - 1 })
-                  }}
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} />
-                  &nbsp;&nbsp; ANTERIOR
-                </Button>
                 <small className="mt-2">
                   {this.state.selectedAnimal + 1}/{this.state.animais.length}
                 </small>
                 <Button
-                  disabled={selectedAnimal === this.state.animais.length - 1}
                   onClick={() => {
-                    this.setState({ selectedAnimal: selectedAnimal + 1 })
+                    this.setState({ modalFeedback: true })
                   }}
                 >
                   <FontAwesomeIcon icon={faChevronRight} />
-                  &nbsp;&nbsp; PROXIMA
+                  &nbsp;&nbsp; Enviar
                 </Button>
               </Col>
             </Row>
@@ -171,16 +173,31 @@ class PaginaQuiz extends React.Component {
                 {JANELAS.map((item, _) =>
                   <div
                     title={item.title}
-                    className={animal && animal.tipo === "gato" ? item.className : item.classNameDog}
+                    className={item.className}
                     onMouseOver={() => this.setState({ selectedArea: item.janela })}
                     onMouseLeave={() => this.setState({ selectedArea: -1 })}
+                    onClick={() => {
+                      let animaisTemp = this.state.animais;
+                      let temp = animal
+                      temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
+
+                      animaisTemp[this.state.selectedAnimal] = temp
+
+                      let score = this.state.score
+                      if (temp.imgs[selectedArea].clicked) {
+                        score += 1
+                      } else {
+                        score -= 1
+                      }
+                      this.setState({ animais: animaisTemp, score })
+                    }}
                   >
-                    .
+                    {item.title}
                   </div>
                 )}
               </div>
               <Image
-                src={animal && animal.tipo === "gato" ? gatinho : doguinio}
+                src={doguinio}
                 className="mb-2"
                 alt="imagem"
                 style={{
@@ -194,7 +211,7 @@ class PaginaQuiz extends React.Component {
                 <h6>INFORMAÇÕES</h6>
               </Card.Header>
               <Card.Body className="bg-secondary text-white">
-                <p> 
+                <p>
                   Id: {this.state.animais.length && animal ? animal.id : 0}
                   <br />
                   Cadastro:{" "}
@@ -204,6 +221,41 @@ class PaginaQuiz extends React.Component {
             </Card>
           </Col>
         </Row>
+        <Modal show={this.state.modalFeedback}>
+          <Modal.Header>Feedback</Modal.Header>
+          <Modal.Body>
+
+            {[0, 1, 2, 3].map(i => {
+              let resposta = ''
+              let check = false 
+              if (animal && animal.imgs[i].clicked == true) {
+                resposta = <h6>{JANELAS[i].title}: Tem líquido</h6> 
+                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido 
+              } else if (animal && animal.imgs[i].clicked == false) {
+                resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6> 
+                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido
+              } else if (animal && animal.imgs[i].clicked == null) {
+                resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
+              }
+              return <div className="d-flex justify-content-between" key={i}>
+                {resposta}
+                <h6>{check ?
+                  <i className="bi bi-check-circle-fill text-success" /> :
+                  <i className="bi bi-x-circle-fill text-danger" />
+                }
+                </h6>
+              </div>
+            }
+            )}
+
+            <h4 className='pt-3'>Score: {this.state.score}</h4>
+            <h4>Score Esperado: {animal ? animal.pontuacao : 0}</h4>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" size='sm' onClick={() => window.location.href = '/'} >Voltar a Página Inicial</Button>
+            <Button onClick={() => window.location.reload()} size='sm' >Tentar novamente</Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     );
   }

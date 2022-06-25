@@ -7,6 +7,9 @@ const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "" }
 const DEFAULT_IMAGEM_DATA = { janela: "", temLiquido: false, file: {}, caminho: "" }
 
+
+let TIPO_JANELAS = ["HD", "HR", "ER", "CC"]
+
 export default function ModalAnimal(props) {
 
     const [openModalAnimal, setOpenModalAnimal] = React.useState(false)
@@ -87,14 +90,12 @@ export default function ModalAnimal(props) {
     function createUpdateImagem() {
         let url = `${API_URL}/animal/${props.animal.id}/imagens/`
         let headers = {
-            "content-type": "application/json"
+            "content-type": "multipart/form-data"
         }
 
         const formData = new FormData();
-        formData.append("imagem", {
-            janela: imagemData.janela,
-            temLiquido: imagemData.temLiquido
-        }); 
+        formData.append("janela", imagemData.janela)
+        formData.append("temLiquido", imagemData.temLiquido || false)
         formData.append("file", imagemData.file);
 
         if (imgEdit) {
@@ -102,8 +103,8 @@ export default function ModalAnimal(props) {
             axios.put(url, formData, { headers })
                 .then((resp) => {
                     getImagens(props.animal.id)
-                    setOpenModalImagem(true)
-                    setOpenModalAnimal(false)
+                    setOpenModalImagem(false)
+                    setOpenModalAnimal(true)
                 })
                 .catch((err) => {
                     console.log(err);
@@ -112,13 +113,14 @@ export default function ModalAnimal(props) {
 
             return
         }
-        
-        
 
-        axios.post(url, formData , { headers })
+
+
+        axios.post(url, formData, { headers })
             .then((resp) => {
                 getImagens(props.animal.id)
                 setOpenModalImagem(false)
+                setOpenModalAnimal(true)
             })
             .catch((err) => {
                 console.log(err);
@@ -128,10 +130,10 @@ export default function ModalAnimal(props) {
     function deletarImagem(img) {
         let url = `${API_URL}/animal/${img.animal}/imagens/${img.id}`
         axios.delete(url)
-        .then(resp => {
-            getImagens(img.animal) 
-        })
-        .catch(err => console.log(err))
+            .then(resp => {
+                getImagens(img.animal)
+            })
+            .catch(err => console.log(err))
     }
 
     const action = props.edit ? "Editar" : "Cadastrar"
@@ -158,9 +160,10 @@ export default function ModalAnimal(props) {
                 <div>
                     <div className='row'>
                         <div className="form-group col-6">
-                            <label>Tipo de animal</label>
+                            <label>Espécie de animal</label>
                             <input
                                 className="form-control"
+                                placeholder='Ex: Gato, Cachorro e etc'
                                 onChange={(e) => {
                                     setAnimalData({ tipo: e.target.value, pontuacao: animalData.pontuacao })
                                 }}
@@ -213,8 +216,8 @@ export default function ModalAnimal(props) {
                             </thead>
                             <tbody>
                                 {imagens.map((img, _) => <tr key={_}>
-                                    <td>{img.caminho.substring(0,16)} {img.caminho.length > 16? "...": ""} </td>
-                                    <td>{img.janela}</td>
+                                    <td>{img.caminho.substring(0, 16)} {img.caminho.length > 16 ? "..." : ""} </td>
+                                    <td>{TIPO_JANELAS[img.janela]}</td>
                                     <td>{img.temLiquido ? "Sim" : "Não"}</td>
                                     <td>
                                         <div className='d-flex justify-content-around'>
@@ -259,16 +262,22 @@ export default function ModalAnimal(props) {
                 <div className='row'>
                     <div className="form-group col-6">
                         <label>Janela</label>
-                        <input
-                            className="form-control"
-                            type="number"
+                        <select
+                            className='form-control'
+                            defaultValue={imagemData.janela}
                             onChange={(e) => {
-                                let janela = e.target.value
-                                if (janela < 0 || janela > 4) return
-                                setImagemData({ janela, temliquido: imagemData.temliquido })
+                                console.log("liquido", e.target.value === "true")
+                                setImagemData({
+                                    janela: e.target.value,
+                                    temliquido: imagemData.temliquido
+                                })
                             }}
-                            value={imagemData.janela}
-                        />
+                        >
+                            <option value={0}>HD</option>
+                            <option value={1}>HR</option>
+                            <option value={2}>ER</option>
+                            <option value={3}>CC</option>
+                        </select>
                     </div>
                     <div className="form-group col-6">
                         <label>Tem Liquido?</label>
