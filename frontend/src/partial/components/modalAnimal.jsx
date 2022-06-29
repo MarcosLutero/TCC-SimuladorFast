@@ -2,10 +2,10 @@ import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
 import axios from 'axios';
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://hub15a.space:8002"
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "" }
-const DEFAULT_IMAGEM_DATA = { janela: "", temLiquido: false, file: {}, caminho: "" }
+const DEFAULT_IMAGEM_DATA = { janela: 0, temLiquido: false, file: {}, caminho: "" }
 
 
 let TIPO_JANELAS = ["HD", "HR", "ER", "CC"]

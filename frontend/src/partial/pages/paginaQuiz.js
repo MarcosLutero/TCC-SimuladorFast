@@ -38,7 +38,7 @@ const JANELAS = [
   }
 ]
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://hub15a.space:8002"
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
 class PaginaQuiz extends React.Component {
@@ -167,58 +167,7 @@ class PaginaQuiz extends React.Component {
                   &nbsp;&nbsp; Enviar
                 </Button>
               </Col>
-            </Row>
-            <div
-              style={{
-                background: `url(${doguinio}) no-repeat center /cover`,
-                height: 500,
-                width: 700
-              }}
-              className="image-box img-fluid">
-
-              <div className="img-exam-controls" style={{
-              }}>
-                <div className="view-area-HD" style={{
-                  display: "flex",
-                  paddingTop: 10,
-                  width: '100%',
-                  flexDirection: "row",
-                  justifyContent: "center",
-                }}>
-                  <button style={{
-                    marginTop: 30
-                  }}>
-                    HD
-                  </button>
-                </div>
-                <div className="view-area-ER" style={{
-                  display: "flex",
-                  padding: 60,
-                  width: '100%',
-                  flexDirection: "row",
-                  justifyContent: "start"
-                }}>
-                  <button>
-                    ER
-                  </button>
-                </div>
-                <div className="view-area-HR" style={{
-                  display: "flex",
-                  width: '100%',
-                  flexDirection: "row",
-                  justifyContent: "end"
-                }}>
-                  <button>
-                    HR
-                  </button>
-                </div>
-                <div className="view-area-CC">
-                  <button>
-                    CC
-                  </button>
-                </div>
-              </div>
-            </div>
+            </Row> 
             <div className="div-geral bg-info">
               <div style={{ position: "absolute", maxWidth: "200px", width: "auto" }}>
                 {JANELAS.map((item, _) =>

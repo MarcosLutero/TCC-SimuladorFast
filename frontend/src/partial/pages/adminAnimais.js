@@ -5,7 +5,7 @@ import ModalAnimal from "../components/modalAnimal";
 
 var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
-const API_URL = "http://localhost:8080"
+const API_URL = "http://hub15a.space:8002"
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
 export default class AdminAnimais extends React.Component {
@@ -47,16 +47,7 @@ export default class AdminAnimais extends React.Component {
           <h2>
             Simulador de Exame A-FAST
           </h2>
-        </div>
-        <button
-          onClick={() => {
-            if(Dropbox.isBrowserSupported()) {
-              Dropbox.choose()
-            } else {
-              console.log('error no dropbox')
-            }
-          }}
-        >asdas</button>
+        </div> 
         <h4 className="text-center">Animais Cadastrados</h4>
         <div className="text-center">
           <ModalAnimal onCreateEdit={() => this.getAnimais()} />
