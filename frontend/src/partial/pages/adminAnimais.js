@@ -48,6 +48,15 @@ export default class AdminAnimais extends React.Component {
             Simulador de Exame A-FAST
           </h2>
         </div>
+        <button
+          onClick={() => {
+            if(Dropbox.isBrowserSupported()) {
+              Dropbox.choose()
+            } else {
+              console.log('error no dropbox')
+            }
+          }}
+        >asdas</button>
         <h4 className="text-center">Animais Cadastrados</h4>
         <div className="text-center">
           <ModalAnimal onCreateEdit={() => this.getAnimais()} />

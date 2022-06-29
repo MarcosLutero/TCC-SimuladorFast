@@ -1,8 +1,8 @@
 import React from "react";
-import { Button, Card, Col, Container, Image, Modal, Row } from "react-bootstrap"; 
+import { Button, Card, Col, Container, Image, Modal, Row } from "react-bootstrap";
 import doguinio from "../img/doguineo.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
+import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
@@ -117,7 +117,7 @@ class PaginaQuiz extends React.Component {
             Simulador de Exame A-FAST
           </h2>
         </div>
-        <Row className="m-5 mt-0">
+        <Row className="mb-5 mx-1 mt-0">
           <Col
             lg={6}
             className="align-items-center justify-content-center text-center"
@@ -135,17 +135,17 @@ class PaginaQuiz extends React.Component {
               </div> :
               <div />
             }
-            {animal && this.state.selectedArea !== -1? 
-            <Image
-              alt="imagem"
-              className="  m-0 p-0 imagem-direita"
-              style={{
-                maxWidth: "440px",
-                width: "auto",
-                minHeight: "390px"
-              }}
-              src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
-            />: "Procure as areas"}
+            {animal && this.state.selectedArea !== -1 ?
+              <Image
+                alt="imagem"
+                className="m-0 p-0 imagem-direita"
+                style={{
+                  maxWidth: "440px",
+                  width: "auto",
+                  minHeight: "390px"
+                }}
+                src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
+              /> : "Procure as areas"}
           </Col>
           <Col
             lg={6}
@@ -168,7 +168,58 @@ class PaginaQuiz extends React.Component {
                 </Button>
               </Col>
             </Row>
-            <div className="div-geral">
+            <div
+              style={{
+                background: `url(${doguinio}) no-repeat center /cover`,
+                height: 500,
+                width: 700
+              }}
+              className="image-box img-fluid">
+
+              <div className="img-exam-controls" style={{
+              }}>
+                <div className="view-area-HD" style={{
+                  display: "flex",
+                  paddingTop: 10,
+                  width: '100%',
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}>
+                  <button style={{
+                    marginTop: 30
+                  }}>
+                    HD
+                  </button>
+                </div>
+                <div className="view-area-ER" style={{
+                  display: "flex",
+                  padding: 60,
+                  width: '100%',
+                  flexDirection: "row",
+                  justifyContent: "start"
+                }}>
+                  <button>
+                    ER
+                  </button>
+                </div>
+                <div className="view-area-HR" style={{
+                  display: "flex",
+                  width: '100%',
+                  flexDirection: "row",
+                  justifyContent: "end"
+                }}>
+                  <button>
+                    HR
+                  </button>
+                </div>
+                <div className="view-area-CC">
+                  <button>
+                    CC
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="div-geral bg-info">
               <div style={{ position: "absolute", maxWidth: "200px", width: "auto" }}>
                 {JANELAS.map((item, _) =>
                   <div
@@ -227,12 +278,12 @@ class PaginaQuiz extends React.Component {
 
             {[0, 1, 2, 3].map(i => {
               let resposta = ''
-              let check = false 
+              let check = false
               if (animal && animal.imgs[i].clicked == true) {
-                resposta = <h6>{JANELAS[i].title}: Tem líquido</h6> 
-                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido 
+                resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
+                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido
               } else if (animal && animal.imgs[i].clicked == false) {
-                resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6> 
+                resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
                 check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido
               } else if (animal && animal.imgs[i].clicked == null) {
                 resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
