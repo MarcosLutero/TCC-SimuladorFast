@@ -2,10 +2,11 @@ import React from "react";
 import { Container } from "react-bootstrap";
 import axios, { Axios } from "axios";
 import ModalAnimal from "../components/modalAnimal";
+import { Link } from "react-router-dom";
 
 var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
-const API_URL = "http://hub15a.space:8002"
+const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
 export default class AdminAnimais extends React.Component {
@@ -43,11 +44,13 @@ export default class AdminAnimais extends React.Component {
   render() {
     return (
       <Container fluid className="p-0 m-0 col-12">
-        <div className='titulo col-12 my-2'>
+        <div className='titulo col-12 my-2'> 
+          <Link to={"/"} style={{position: "absolute", left: 15, toṕ:40, fontSize: 17}} className='btn btn-primary'>Voltar</Link>
           <h2>
             Simulador de Exame A-FAST
           </h2>
-        </div> 
+
+        </div>
         <h4 className="text-center">Animais Cadastrados</h4>
         <div className="text-center">
           <ModalAnimal onCreateEdit={() => this.getAnimais()} />

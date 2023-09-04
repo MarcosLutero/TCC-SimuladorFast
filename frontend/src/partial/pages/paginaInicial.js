@@ -20,8 +20,8 @@ class PaginaInicial extends React.Component {
             Começar
           </Link>
         </div>
-        <div className='configuracoes'>
-          <small>Configurações</small>
+        <div className='configuracoes mt-2'>
+          <small style={{cursor: "pointer"}} onClick={() => window.location.href = "admin/animais"} >Configurações</small>
         </div>
       </div>
     )

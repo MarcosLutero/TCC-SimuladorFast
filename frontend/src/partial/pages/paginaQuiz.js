@@ -38,7 +38,7 @@ const JANELAS = [
   }
 ]
 
-const API_URL = "http://hub15a.space:8002"
+const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
 class PaginaQuiz extends React.Component {
@@ -131,7 +131,7 @@ class PaginaQuiz extends React.Component {
             </div>
             {this.state.selectedArea !== -1 ?
               <div class="custom-control custom-switch my-3">
-                <label ><strong>{!animal.imgs[selectedArea].clicked ? "Não" : ""} Tem liquido</strong></label>
+                <label ><strong>{animal.imgs[selectedArea].clicked == undefined ? "Sem Resposta": !animal.imgs[selectedArea].clicked? "Não tem liquido" : "Tem liquido"}</strong></label>
               </div> :
               <div />
             }
@@ -168,7 +168,7 @@ class PaginaQuiz extends React.Component {
                 </Button>
               </Col>
             </Row> 
-            <div className="div-geral bg-info">
+            <div className="div-geral">
               <div style={{ position: "absolute", maxWidth: "200px", width: "auto" }}>
                 {JANELAS.map((item, _) =>
                   <div
