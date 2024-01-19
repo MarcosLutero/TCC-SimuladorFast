@@ -1,9 +1,9 @@
 import React from "react";
 import { Button, Card, Col, Container, Image, Modal, Row } from "react-bootstrap";
-import doguinio from "../img/doguineo.jpg";
+import doguinio from "../img/doguineo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChevronRight,
+	faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
 import { Link } from "react-router-dom";
@@ -12,30 +12,26 @@ import axios from "axios";
 var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
 const JANELAS = [
-  {
-    title: "HD",
-    className: "norte",
-    classNameDog: "norte",
-    janela: 0
-  },
-  {
-    title: "HR",
-    className: "oeste",
-    classNameDog: "oeste",
-    janela: 1
-  },
-  {
-    title: "ER",
-    className: "leste",
-    classNameDog: "leste",
-    janela: 2
-  },
-  {
-    title: "CC",
-    className: "sul",
-    classNameDog: "sul",
-    janela: 3
-  }
+	{
+		title: "HD",
+		className: "hd",
+		janela: 0
+	},
+	{
+		title: "ER",
+		className: "er",
+		janela: 1
+	},
+	{
+		title: "CC",
+		className: "cc",
+		janela: 2
+	},
+	{
+		title: "HR",
+		className: "hr",
+		janela: 3
+	},
 ]
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -43,222 +39,239 @@ const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
 
 class PaginaQuiz extends React.Component {
 
-  constructor(props) {
-    super(props);
+	constructor(props) {
+		super(props);
 
-    this.state = {
-      selectedAnimal: 0,
-      selectedArea: -1,
-      perfil: doguinio,
-      tempo: 180,
-      timer: null,
-      score: 0,
-      animais: [],
-      modalFeedback: false
-    };
+		this.state = {
+			selectedAnimal: 0,
+			selectedArea: -1,
+			perfil: doguinio,
+			tempo: 180,
+			timer: null,
+			score: 0,
+			animais: [],
+			modalFeedback: false
+		};
 
-  }
+	}
 
-  flag = false;
+	flag = false;
 
-  getAnimais() {
-    let qtdAnimais = window.location.href.split("qtd=")[1] || 1
-    axios
-      .get(`${API_URL}/sortear-animais/${qtdAnimais}`)
-      .then(({ data }) => {
-        this.setState({ animais: data });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+	getAnimais() {
+		let config = window.sessionStorage.getItem("config") 
+		if (!config) {
+			config = {
+				tempo: 180,
+				qtd:1
+			}
+		} else {
+			config = JSON.parse(config)
+			config.tempo = config.tempo * 60
+		}
+		
+		this.setState({tempo: config.tempo})
 
-  componentDidMount() {
-    this.getAnimais();
-    if (!this.flag)
-      this.setState({
-        timer: setInterval(() => {
-          if (this.state.tempo > 0) {
-            this.setState((state) => ({ tempo: state.tempo - 1 }));
-          } else {
-            this.darFeedback()
-          }
-        }, 1000),
-      });
-    this.flag = true;
-  }
+		axios
+			.get(`${API_URL}/sortear-animais/${config.qtd}`)
+			.then(({ data }) => {
+				this.setState({ animais: data });
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	}
 
-  componentWillUnmount() {
-    if (this.state.timer) {
-      clearInterval(this.state.timer);
-    }
-  }
+	componentDidMount() {
+		this.getAnimais();
+		if (!this.flag)
+			this.setState({
+				timer: setInterval(() => {
+					if (this.state.tempo > 0) {
+						this.setState((state) => ({ tempo: state.tempo - 1 }));
+					} else {
+						this.darFeedback()
+					}
+				}, 1000),
+			});
+		this.flag = true;
+	}
 
-  formatarTempo() {
-    const minutes = Math.floor(this.state.tempo / 60);
-    let seconds = this.state.tempo % 60;
-    if (seconds < 10) {
-      seconds = `0${seconds}`;
-    }
-    return `${minutes}:${seconds}`;
-  }
+	componentWillUnmount() {
+		if (this.state.timer) {
+			clearInterval(this.state.timer);
+		}
+	}
 
-  darFeedback() {
-    this.setState({ modalFeedback: true })
-  }
+	formatarTempo() {
+		const minutes = Math.floor(this.state.tempo / 60);
+		let seconds = this.state.tempo % 60;
+		if (seconds < 10) {
+			seconds = `0${seconds}`;
+		}
+		return `${minutes}:${seconds}`;
+	}
 
-  render() {
-    const { selectedAnimal, selectedArea } = this.state;
-    let animal = this.state.animais[selectedAnimal];
-    return (
-      <Container fluid className="p-0 m-0 bg-dark text-light pb-5">
-        <div className='titulo col-12 my-2'>
-          <h2>
-            Simulador de Exame A-FAST
-          </h2>
-        </div>
-        <Row className="mb-5 mx-1 mt-0">
-          <Col
-            lg={6}
-            className="align-items-center justify-content-center text-center"
-          >
-            <div className="row col-12 col-12">
-              <Link to={"/"} className='btn btn-primary col-lg-3 mx-auto btn-sm mb-2'>Voltar</Link>
-              <div className="col-lg-6 mt-1">
-                Tempo:{this.formatarTempo()} /
-                Score: {this.state.score}
-              </div>
-            </div>
-            {this.state.selectedArea !== -1 ?
-              <div class="custom-control custom-switch my-3">
-                <label ><strong>{animal.imgs[selectedArea].clicked == undefined ? "Sem Resposta": !animal.imgs[selectedArea].clicked? "Não tem liquido" : "Tem liquido"}</strong></label>
-              </div> :
-              <div />
-            }
-            {animal && this.state.selectedArea !== -1 ?
-              <Image
-                alt="imagem"
-                className="m-0 p-0 imagem-direita"
-                style={{
-                  maxWidth: "440px",
-                  width: "auto",
-                  minHeight: "390px"
-                }}
-                src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
-              /> : "Procure as areas"}
-          </Col>
-          <Col
-            lg={6}
-            md={12}
-            sm={12}
-            className="align-items-center justify-content-center text-center"
-          >
-            <Row className="mb-2">
-              <Col className="d-flex justify-content-around">
-                <small className="mt-2">
-                  {this.state.selectedAnimal + 1}/{this.state.animais.length}
-                </small>
-                <Button
-                  onClick={() => {
-                    this.setState({ modalFeedback: true })
-                  }}
-                >
-                  <FontAwesomeIcon icon={faChevronRight} />
-                  &nbsp;&nbsp; Enviar
-                </Button>
-              </Col>
-            </Row> 
-            <div className="div-geral">
-              <div style={{ position: "absolute", maxWidth: "200px", width: "auto" }}>
-                {JANELAS.map((item, _) =>
-                  <div
-                    title={item.title}
-                    className={item.className}
-                    onMouseOver={() => this.setState({ selectedArea: item.janela })}
-                    onMouseLeave={() => this.setState({ selectedArea: -1 })}
-                    onClick={() => {
-                      let animaisTemp = this.state.animais;
-                      let temp = animal
-                      temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
+	darFeedback() {
+		this.setState({ modalFeedback: true })
+	}
 
-                      animaisTemp[this.state.selectedAnimal] = temp
+	render() {
+		const { selectedAnimal, selectedArea } = this.state;
+		let animal = this.state.animais[selectedAnimal];
+		if (animal && !animal.pontuacaoSugerida) {
+			animal.pontuacaoSugerida = 0
+		}
+		return (
+			<div className="text-light" style={{ backgroundColor: "black", height: "100vh" }} >
+				<div className='col-12 pt-3 d-flex justify-content-between'>
+					<div>
+					<Link to={"/"} className='btn btn-primary btn-sm'>Voltar</Link>
+					</div>
+					<div className="">
+						<h1 className="titulo">
+							Simulador de Exame A-FAST
+						</h1>
+					</div>
+					<div />
+				</div>
+				<div className="row col-12">
+					<div className="col-lg-6 mt-1 text-center">
+						Tempo:{this.formatarTempo()} /
+						Score: {animal && animal.pontuacaoSugerida ? animal.pontuacaoSugerida : 0}
+					</div>
+					<div className="col-lg-6 my-1 d-flex justify-content-around">
+						<div className="d-flex justify-content-center" >
+							{selectedAnimal > 0 ? <Button
+								onClick={() => {
+									let { selectedAnimal } = this.state
+									selectedAnimal -= 1
+									this.setState({ selectedAnimal })
+								}}
+							>
+								Anterior
+							</Button> : <div />}
+							<small className="mt-2">
+								{selectedAnimal + 1}/{this.state.animais.length}
+							</small>
+							{selectedAnimal < this.state.animais.length - 1 ? <Button
+								onClick={() => {
+									let { selectedAnimal } = this.state
+									selectedAnimal += 1
+									this.setState({ selectedAnimal })
+								}}
+							>
+								Proximo
+							</Button> : <div />}
+						</div>
+						{selectedAnimal + 1 == this.state.animais.length ? <Button
+							onClick={() => this.setState({ modalFeedback: true })}
+						>
+							Enviar
+							<FontAwesomeIcon icon={faChevronRight} />
+						</Button> : <div />}
+					</div>
 
-                      let score = this.state.score
-                      if (temp.imgs[selectedArea].clicked) {
-                        score += 1
-                      } else {
-                        score -= 1
-                      }
-                      this.setState({ animais: animaisTemp, score })
-                    }}
-                  >
-                    {item.title}
-                  </div>
-                )}
-              </div>
-              <Image
-                src={doguinio}
-                className="mb-2"
-                alt="imagem"
-                style={{
-                  maxWidth: 805,
-                  maxHeight: 452
-                }}
-              />
-            </div>
-            <Card>
-              <Card.Header className="bg-success text-white" >
-                <h6>INFORMAÇÕES</h6>
-              </Card.Header>
-              <Card.Body className="bg-secondary text-white">
-                <p>
-                  Id: {this.state.animais.length && animal ? animal.id : 0}
-                  <br />
-                  Cadastro:{" "}
-                  {this.state.animais.length && animal ? new Date(animal.cadastro).toLocaleString("pt-BR", options) : "N/A"}
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-        <Modal show={this.state.modalFeedback}>
-          <Modal.Header>Feedback</Modal.Header>
-          <Modal.Body>
+				</div>
+				<div className="div-geral">
+					<div className="col-6 d-flex justify-content-around lado-esquerdo">
+						{
+							animal && this.state.selectedArea !== -1 ?
+								<div class="text-light d-column text-center" style={{ top: 10 }}>
+									<label >
+										<strong>
+											Tem liquido? {animal.imgs[selectedArea].clicked == undefined ? "(Pressione o botão esquerdo do mouse para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
+										</strong>
+									</label>
+									<br />
+									<Image
+										alt="imagem"
+										className="m-0 p-0 imagem-direita"
+										style={{
+											maxWidth: "440px",
+											width: "auto",
+											minHeight: "390px"
+										}}
+										src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
+									/>
+								</div>
+								: "Procure as areas"}
+					</div>
+					<div className="col-6 lado-direito">
 
-            {[0, 1, 2, 3].map(i => {
-              let resposta = ''
-              let check = false
-              if (animal && animal.imgs[i].clicked == true) {
-                resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
-                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido
-              } else if (animal && animal.imgs[i].clicked == false) {
-                resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
-                check = Boolean(animal.imgs[i].clicked) == animal.imgs[i].temLiquido
-              } else if (animal && animal.imgs[i].clicked == null) {
-                resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
-              }
-              return <div className="d-flex justify-content-between" key={i}>
-                {resposta}
-                <h6>{check ?
-                  <i className="bi bi-check-circle-fill text-success" /> :
-                  <i className="bi bi-x-circle-fill text-danger" />
-                }
-                </h6>
-              </div>
-            }
-            )}
+						<div class="imagem-container">
+							<img src={doguinio} alt="Imagem" />
+							{JANELAS.map((item, _) =>
+								<div
+									title={item.title}
+									className={item.className}
+									onMouseOver={() => this.setState({ selectedArea: item.janela })}
+									onMouseLeave={() => this.setState({ selectedArea: -1 })}
+									onClick={() => {
+										let animaisTemp = this.state.animais;
+										let temp = animal
+										temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
 
-            <h4 className='pt-3'>Score: {this.state.score}</h4>
-            <h4>Score Esperado: {animal ? animal.pontuacao : 0}</h4>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="danger" size='sm' onClick={() => window.location.href = '/'} >Voltar a Página Inicial</Button>
-            <Button onClick={() => window.location.reload()} size='sm' >Tentar novamente</Button>
-          </Modal.Footer>
-        </Modal>
-      </Container>
-    );
-  }
+										let score = temp.pontuacaoSugerida
+										if (temp.imgs[selectedArea].clicked) {
+											score += 1
+										} else {
+											score -= 1
+										}
+										animaisTemp[this.state.selectedAnimal].pontuacaoSugerida = score
+										animaisTemp[this.state.selectedAnimal] = temp
+										this.setState({ animais: animaisTemp })
+									}}
+								>
+									{item.title}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+				<Modal show={this.state.modalFeedback}>
+					<Modal.Header>Feedback</Modal.Header>
+					<Modal.Body>
+						{this.state.animais.map((a, _) => {
+							return (
+								<div className="mb-2">
+									<h4>Animal {_ + 1}</h4>
+									{[0, 1, 2, 3].map(i => {
+										let resposta = ''
+										let check = false
+										if (a.imgs[i].clicked == true) {
+											resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
+											check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
+										} else if (a.imgs[i].clicked == false) {
+											resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
+											check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
+										} else if (a.imgs[i].clicked == null) {
+											resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
+										}
+										return <div className="d-flex justify-content-between" key={i}>
+											{resposta}
+											<h6>{check ?
+												<i className="bi bi-check-circle-fill text-success" /> :
+												<i className="bi bi-x-circle-fill text-danger" />
+											}
+											</h6>
+										</div>
+									}
+									)}
+									<h5 className='pt-1'>Score: {a.pontuacaoSugerida || 0}</h5>
+									<h5>Score Esperado: {a ? a.pontuacao : 0}</h5>
+								</div>
+							)
+						})}
+
+					</Modal.Body>
+					<Modal.Footer>
+						<Button variant="danger" size='sm' onClick={() => window.location.href = '/'} >Voltar a Página Inicial</Button>
+						<Button onClick={() => window.location.reload()} size='sm' >Tentar novamente</Button>
+					</Modal.Footer>
+				</Modal>
+			</div >
+		);
+	}
 }
 
 export default PaginaQuiz;

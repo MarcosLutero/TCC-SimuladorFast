@@ -6,12 +6,14 @@
 .titulo,
 .botao,
 .configuracoes {
+  color: white;
   display: flex;
   text-align: center;
   justify-content: center;
   align-items: center;
 }
 
+h1,
 h2,
 button {
   font-family: "Shadows Into Light";
@@ -22,10 +24,42 @@ h2 {
 }
 
 .div-geral {
-  position: relative;
-  border: 1px black solid;
-  overflow: hidden;
+  margin-top: -100;
+  display: flex;
+  align-items: center;
+   /* Para ocupar a altura total da tela */
+}
 
+.lado-direito {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.lado-esquerdo {  
+  top: 100%;
+  left: 100%; 
+}
+
+.imagem-container {
+  position: relative;
+  text-align: right; /* Alinha a imagem à direita */
+  flex-shrink: 0; /* Evita que a imagem diminua de tamanho */
+  margin-right: 10;
+  margin-top: 10;
+}
+
+.imagem-container img {
+  max-width: 96%; /* A imagem terá no máximo a largura do contêiner */
+  max-height: 100%; /* A imagem terá no máximo a altura do contêiner */
+}
+
+
+#meuBotao {
+  position: absolute;
+  top: 40%;
+  left: 70%;
+  transform: translate(-50%, -50%);
 }
 
 .imagem {   
@@ -33,44 +67,44 @@ h2 {
 }
 
 .imagem-direita { 
-  max-height: 700;
-  max-width: 300;
+  height: 700;
+  width: 300;
   position: static;
 }
 
-.norte,
-.oeste,
-.leste,
-.sul {
+.hd,
+.er,
+.cc,
+.hr {
   position: absolute; 
-  border-radius: 25px; 
+  border-radius: 55px; 
   opacity: 0.01;
-  width: 40px;
-  height: 40px;
+  padding: 35px;
+  transform: translate(-50%, -50%);
 }
 
-.norte {
-  background-color: red; 
-  margin-top: 85px; 
-  left: 270px; 
-}
-
-.oeste {
+.hd {
   background-color: blue;
-  margin-top: 155px; 
-  left: 190px; 
+  top: 50%;
+  left: 20%;
 }
 
-.leste {
-  background-color: green;
-  margin-top: 155px;
-  left: 340px; 
-} 
-
-.sul {
+.er {
   background-color: black;
-  top: 280px;
-  left: 270px; 
+  top: 36%;
+  left: 40%;
+}
+
+.cc {
+  background-color: green; 
+  left: 55%; 
+  top: 53%; 
+}
+
+.hr {
+  background-color: red; 
+  top: 63%;
+  left: 37%;
 }
 
 .botoes {

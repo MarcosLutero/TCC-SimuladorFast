@@ -23,16 +23,24 @@ export default function ModalAnimal(props) {
     function getImagens(idAnimal) {
         let url = `${API_URL}/animal/imagens/${idAnimal}`
         axios.get(url)
-            .then(resp => setImagens(resp.data["imgs"]))
+            .then(resp => {
+                setImagens(resp.data["imgs"])
+                let pontuacao = 0
+                resp.data["imgs"].map(a => {
+                    if (a.temLiquido) {
+                        pontuacao += 1
+                    }
+                })
+                setAnimalData({...animalData, pontuacao})
+            })
             .catch(err => console.log(err))
     }
 
     function onOpenModalAnimal() {
         let temp = DEFAULT_ANIMAL_DATA
-        if (props.edit) {
+        if (props.edit) { 
             temp = {
-                tipo: props.animal.tipo,
-                pontuacao: props.animal.pontuacao
+                tipo: props.animal.tipo
             }
             getImagens(props.animal.id)
         }
@@ -175,11 +183,7 @@ export default function ModalAnimal(props) {
                             <input
                                 className="form-control"
                                 type='number'
-                                onChange={(e) => {
-                                    let pontuacao = e.target.value
-                                    if (pontuacao < 0 || pontuacao > 4) return
-                                    setAnimalData({ pontuacao, tipo: animalData.tipo })
-                                }}
+                                disabled
                                 value={animalData.pontuacao}
                             />
                         </div>
@@ -266,7 +270,6 @@ export default function ModalAnimal(props) {
                             className='form-control'
                             defaultValue={imagemData.janela}
                             onChange={(e) => {
-                                console.log("liquido", e.target.value === "true")
                                 setImagemData({
                                     janela: e.target.value,
                                     temliquido: imagemData.temliquido
