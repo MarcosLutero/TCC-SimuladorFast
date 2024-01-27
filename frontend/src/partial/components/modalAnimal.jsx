@@ -4,8 +4,8 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
-const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "" }
-const DEFAULT_IMAGEM_DATA = { janela: 0, temLiquido: false, file: {}, caminho: "" }
+const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "", lista_janelas: [] }
+const DEFAULT_IMAGEM_DATA = { janela: '', temLiquido: false, file: {}, caminho: "" }
 
 
 let TIPO_JANELAS = ["HD", "HR", "ER", "CC"]
@@ -26,12 +26,17 @@ export default function ModalAnimal(props) {
             .then(resp => {
                 setImagens(resp.data["imgs"])
                 let pontuacao = 0
-                resp.data["imgs"].map(a => {
-                    if (a.temLiquido) {
+                let lista_janelas = []
+                resp.data["imgs"].map(img => {
+                    if (!lista_janelas.includes(img.janela)) {
+                        lista_janelas.push(img.janela)
+                    }
+                    if (img.temLiquido) {
                         pontuacao += 1
                     }
                 })
-                setAnimalData({...animalData, pontuacao})
+
+                setAnimalData({ ...resp.data, lista_janelas, pontuacao })
             })
             .catch(err => console.log(err))
     }
@@ -113,6 +118,9 @@ export default function ModalAnimal(props) {
                     getImagens(props.animal.id)
                     setOpenModalImagem(false)
                     setOpenModalAnimal(true)
+                    if (props.onCreateEdit) {
+                        props.onCreateEdit()
+                    }
                 })
                 .catch((err) => {
                     console.log(err);
@@ -173,9 +181,9 @@ export default function ModalAnimal(props) {
                                 className="form-control"
                                 placeholder='Ex: Gato, Cachorro e etc'
                                 onChange={(e) => {
-                                    setAnimalData({ tipo: e.target.value, pontuacao: animalData.pontuacao })
+                                    setAnimalData({ ...animalData, tipo: e.target.value, pontuacao: animalData.pontuacao })
                                 }}
-                                value={animalData["tipo"]}
+                                value={animalData.tipo}
                             />
                         </div>
                         <div className="form-group col-6">
@@ -203,6 +211,7 @@ export default function ModalAnimal(props) {
                         <h5 className='mt-2'>
                             Imagens {'  '}
                             <button
+                                disabled={imagens.length >= 4}
                                 className='btn btn-sm btn-primary ml-1'
                                 onClick={() => onOpenModalImagem()}
                             >
@@ -269,17 +278,26 @@ export default function ModalAnimal(props) {
                         <select
                             className='form-control'
                             defaultValue={imagemData.janela}
+                            disabled={imgEdit}
                             onChange={(e) => {
                                 setImagemData({
                                     janela: e.target.value,
                                     temliquido: imagemData.temliquido
                                 })
                             }}
-                        >
-                            <option value={0}>HD</option>
-                            <option value={1}>HR</option>
-                            <option value={2}>ER</option>
-                            <option value={3}>CC</option>
+                        >   <option value=''>Selecionar</option>
+                            {["HD", "HR", "ER", "CC"].map((i, _) => {
+                                if (imgEdit) {
+                                    if (_ == imagemData.janela) {
+                                        return <option value={_} selected={true}>{i}</option>
+                                    }
+                                }
+                                let disabled = animalData.lista_janelas ? animalData.lista_janelas.includes(_) : true
+                                if (disabled) {
+                                    return <div></div>
+                                }
+                                return <option value={_} selected={_}>{i}</option>
+                            })}
                         </select>
                     </div>
                     <div className="form-group col-6">
@@ -304,6 +322,7 @@ export default function ModalAnimal(props) {
 
                         <small className='text-secondary'>Atual: {imgSelected.caminho}</small>
                         <input
+                            /* disabled={imgEdit} */
                             className="form-control"
                             type='file'
                             onChange={(e) => {
@@ -321,6 +340,7 @@ export default function ModalAnimal(props) {
                     <Button
                         className='mt-2 float-right'
                         size='sm'
+                        disabled={imagemData.janela == ""}
                         onClick={createUpdateImagem}
                     >
                         {imgEdit ? "Editar" : 'Cadastrar'}

@@ -37,7 +37,7 @@ class PaginaInicial extends React.Component {
       qtd: this.state.newQtd
     }
     window.sessionStorage.setItem("config", JSON.stringify(config))
-    this.setState({config})
+    this.setState({ config })
   }
 
   componentDidMount() {
@@ -47,7 +47,9 @@ class PaginaInicial extends React.Component {
   render() {
     return (
       <div className='col-12' style={{ backgroundColor: "black", height: "100vh" }}>
-        <small style={{ cursor: "pointer" }} onClick={() => window.location.href = "admin/animais"} >Admin</small>
+        <div className='d-flex justify-content-end'>
+          <button className='btn btn-link text-light' onClick={() => window.location.href = "admin/animais"} >Admin</button>
+        </div>
         <div className='titulo' style={{ paddingTop: "20%" }}>
           <h1>
             Simulador de Exame A-FAST
@@ -74,8 +76,8 @@ class PaginaInicial extends React.Component {
                 id="qtdControl"
                 onChange={e => this.setState({ newQtd: Number(e.target.value) })}
               >
-                {[1,2,3].map(i => {
-                  return <option selected={i==this.state.config.qtd}>{i}</option>
+                {[1, 2].map(i => {
+                  return <option selected={i == this.state.config.qtd}>{i}</option>
                 })}
               </select>
             </div>
@@ -86,23 +88,23 @@ class PaginaInicial extends React.Component {
                 id="timeControl"
                 onChange={e => this.setState({ newTempo: Number(e.target.value) })}
               >
-                {[1,2,3,4,5].map(i => {
-                  return <option selected={i==this.state.config.tempo} value={i}>{i} minuto(s)</option>
+                {[1, 2, 3, 4, 5].map(i => {
+                  return <option selected={i == this.state.config.tempo} value={i}>{i} minuto(s)</option>
                 })}
               </select>
             </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" size='sm' onClick={() => this.setState({ configModal: false })} >Voltar</Button>
-            <Button 
-              size='sm' 
+            <Button
+              size='sm'
               onClick={() => {
                 this.saveConfig()
                 this.setState({ configModal: false })
-              }} 
-              >
-                Salvar
-                </Button>
+              }}
+            >
+              Salvar
+            </Button>
           </Modal.Footer>
         </Modal>
       </div>

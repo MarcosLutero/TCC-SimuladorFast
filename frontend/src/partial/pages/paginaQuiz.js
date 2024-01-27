@@ -58,18 +58,18 @@ class PaginaQuiz extends React.Component {
 	flag = false;
 
 	getAnimais() {
-		let config = window.sessionStorage.getItem("config") 
+		let config = window.sessionStorage.getItem("config")
 		if (!config) {
 			config = {
 				tempo: 180,
-				qtd:1
+				qtd: 1
 			}
 		} else {
 			config = JSON.parse(config)
 			config.tempo = config.tempo * 60
 		}
-		
-		this.setState({tempo: config.tempo})
+
+		this.setState({ tempo: config.tempo })
 
 		axios
 			.get(`${API_URL}/sortear-animais/${config.qtd}`)
@@ -125,7 +125,7 @@ class PaginaQuiz extends React.Component {
 			<div className="text-light" style={{ backgroundColor: "black", height: "100vh" }} >
 				<div className='col-12 pt-3 d-flex justify-content-between'>
 					<div>
-					<Link to={"/"} className='btn btn-primary btn-sm'>Voltar</Link>
+						<Link to={"/"} className='btn btn-primary btn-sm'>Voltar</Link>
 					</div>
 					<div className="">
 						<h1 className="titulo">
@@ -179,7 +179,7 @@ class PaginaQuiz extends React.Component {
 								<div class="text-light d-column text-center" style={{ top: 10 }}>
 									<label >
 										<strong>
-											Tem liquido? {animal.imgs[selectedArea].clicked == undefined ? "(Pressione o botão esquerdo do mouse para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
+											Tem liquido? {animal.imgs[selectedArea].clicked == undefined ? "(Clique na area para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
 										</strong>
 									</label>
 									<br />
@@ -194,7 +194,7 @@ class PaginaQuiz extends React.Component {
 										src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
 									/>
 								</div>
-								: "Procure as areas"}
+								: <h4><strong>Procure as areas</strong></h4>}
 					</div>
 					<div className="col-6 lado-direito">
 
@@ -229,36 +229,52 @@ class PaginaQuiz extends React.Component {
 					</div>
 				</div>
 				<Modal show={this.state.modalFeedback}>
-					<Modal.Header>Feedback</Modal.Header>
+					<Modal.Header><h3>Feedback</h3></Modal.Header>
 					<Modal.Body>
 						{this.state.animais.map((a, _) => {
 							return (
 								<div className="mb-2">
-									<h4>Animal {_ + 1}</h4>
-									{[0, 1, 2, 3].map(i => {
-										let resposta = ''
-										let check = false
-										if (a.imgs[i].clicked == true) {
-											resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
-											check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
-										} else if (a.imgs[i].clicked == false) {
-											resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
-											check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
-										} else if (a.imgs[i].clicked == null) {
-											resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
-										}
-										return <div className="d-flex justify-content-between" key={i}>
-											{resposta}
-											<h6>{check ?
-												<i className="bi bi-check-circle-fill text-success" /> :
-												<i className="bi bi-x-circle-fill text-danger" />
+									<table className="table table-striped">
+										<thead>
+											<th>Animal {_ + 1}</th>
+											<th>Usuário</th>
+											<th>Resposta</th>
+										</thead>
+										<tbody>
+											{[0, 1, 2, 3].map(i => {
+												let resposta = ''
+												let check = false
+												if (a.imgs[i].clicked == true) {
+													resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
+													check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
+												} else if (a.imgs[i].clicked == false) {
+													resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
+													check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
+												} else if (a.imgs[i].clicked == null) {
+													resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
+												}
+												return <tr>
+													<td>{resposta}</td>
+													<td>
+														{check ?
+															<i className="bi bi-check-circle-fill text-success" /> :
+															<i className="bi bi-x-circle-fill text-danger" />
+														}
+													</td>
+													<td>
+														{a.imgs[i].temLiquido ? "Tem Líquido" : "Não tem Líquido"}
+													</td>
+												</tr>
 											}
-											</h6>
-										</div>
-									}
-									)}
-									<h5 className='pt-1'>Score: {a.pontuacaoSugerida || 0}</h5>
-									<h5>Score Esperado: {a ? a.pontuacao : 0}</h5>
+											)}
+											<tr>
+												<td>Pontuação</td>
+												<td>{a.pontuacaoSugerida || 0}</td>
+												<td>{a ? a.pontuacao : 0}</td>
+											</tr>
+										</tbody>
+									</table>
+									<hr />
 								</div>
 							)
 						})}
