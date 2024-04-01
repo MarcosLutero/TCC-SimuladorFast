@@ -1,15 +1,15 @@
 import React from "react";
-import { Button, Card, Col, Container, Image, Modal, Row } from "react-bootstrap";
-import doguinio from "../img/doguineo.png";
+import { Button, Image } from "react-bootstrap";
+import doguinio from "../img/doggo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/index.css";
 import { Link } from "react-router-dom";
-import axios from "axios";
-
-var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+import { sortearAnimaisReq } from "../api/animal";
+import ModalFeedback from "../components/modalFeedback";
+import { cadastrarFeedbackReq } from "../api/feedback";
 
 const JANELAS = [
 	{
@@ -71,25 +71,25 @@ class PaginaQuiz extends React.Component {
 
 		this.setState({ tempo: config.tempo })
 
-		axios
-			.get(`${API_URL}/sortear-animais/${config.qtd}`)
-			.then(({ data }) => {
-				this.setState({ animais: data });
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		sortearAnimaisReq(config.qtd)
+		.then((animais) => {
+			this.setState({ animais });
+		})
+		.catch((err) => {
+			console.log(err);
+		});
 	}
 
 	componentDidMount() {
 		this.getAnimais();
 		if (!this.flag)
 			this.setState({
+				tempoOriginal: this.state.tempo,
 				timer: setInterval(() => {
 					if (this.state.tempo > 0) {
 						this.setState((state) => ({ tempo: state.tempo - 1 }));
 					} else {
-						this.darFeedback()
+						this.abrirModalFeedback()
 					}
 				}, 1000),
 			});
@@ -111,8 +111,56 @@ class PaginaQuiz extends React.Component {
 		return `${minutes}:${seconds}`;
 	}
 
-	darFeedback() {
+	abrirModalFeedback() {
 		this.setState({ modalFeedback: true })
+		this.enviarFeedback()
+	}
+
+	enviarFeedback() {
+		let usuario = sessionStorage.getItem("usuario")
+		usuario = JSON.parse(usuario)
+		let tempoTotal = 0
+		let data = this.state.animais.map(animal => {
+			tempoTotal += animal.tempo
+			
+			let escore = 0
+			let escoreCorreto = animal.pontuacao
+			const janelasData = [0,1,2,3].map(_ => {
+				let {temLiquido, clicked} = animal.imgs[_]
+				let janela = JANELAS[_]
+
+				let resposta = ""
+				const respostaCorreta = temLiquido? "Tem líquido": "Não tem líquido" 
+				if (clicked === undefined) {
+					resposta = "Sem resposta"
+				} else {
+					resposta = clicked? "Tem líquido": "Não tem líquido" 
+					escore = clicked? escore + 1: escore
+				}
+
+				return ({
+					janela, resposta, respostaCorreta
+				})
+			})
+
+			return ({
+				idAnimal: animal.id,
+				tempo: animal.tempo,
+				escore,
+				escoreCorreto,
+				janelas: janelasData
+			})
+		})
+
+		let body = {usuario, tempoTotal, data:JSON.stringify(data)}
+
+		cadastrarFeedbackReq(body)
+		.then(resp => {
+			console.log(resp)
+		})
+		.catch(e => {
+			console.log("erro ao criar feedback")
+		})
 	}
 
 	render() {
@@ -137,34 +185,32 @@ class PaginaQuiz extends React.Component {
 				<div className="row col-12">
 					<div className="col-lg-6 mt-1 text-center">
 						Tempo:{this.formatarTempo()} /
-						Score: {animal && animal.pontuacaoSugerida ? animal.pontuacaoSugerida : 0}
+						Escore: {animal && animal.pontuacaoSugerida ? animal.pontuacaoSugerida : 0}
 					</div>
 					<div className="col-lg-6 my-1 d-flex justify-content-around">
 						<div className="d-flex justify-content-center" >
-							{selectedAnimal > 0 ? <Button
-								onClick={() => {
-									let { selectedAnimal } = this.state
-									selectedAnimal -= 1
-									this.setState({ selectedAnimal })
-								}}
-							>
-								Anterior
-							</Button> : <div />}
 							<small className="mt-2">
 								{selectedAnimal + 1}/{this.state.animais.length}
 							</small>
 							{selectedAnimal < this.state.animais.length - 1 ? <Button
 								onClick={() => {
-									let { selectedAnimal } = this.state
+									let { selectedAnimal, animais:tempAnimais, tempo } = this.state
+									tempAnimais[selectedAnimal].tempo = this.state.tempoOriginal - tempo
 									selectedAnimal += 1
-									this.setState({ selectedAnimal })
+									
+									this.setState({ selectedAnimal, animais: tempAnimais, tempo: this.state.tempoOriginal })
 								}}
 							>
 								Proximo
 							</Button> : <div />}
 						</div>
-						{selectedAnimal + 1 == this.state.animais.length ? <Button
-							onClick={() => this.setState({ modalFeedback: true })}
+						{selectedAnimal + 1 === this.state.animais.length ? <Button
+							onClick={() => {
+								let { animais:tempAnimais, tempo } = this.state
+								tempAnimais[selectedAnimal].tempo = this.state.tempoOriginal - tempo
+								this.setState({ modalFeedback: true, animais: tempAnimais })
+								this.abrirModalFeedback()
+							}}
 						>
 							Enviar
 							<FontAwesomeIcon icon={faChevronRight} />
@@ -179,7 +225,7 @@ class PaginaQuiz extends React.Component {
 								<div class="text-light d-column text-center" style={{ top: 10 }}>
 									<label >
 										<strong>
-											Tem liquido? {animal.imgs[selectedArea].clicked == undefined ? "(Clique na area para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
+											Tem liquido? {animal.imgs[selectedArea].clicked === undefined ? "(Clique na area para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
 										</strong>
 									</label>
 									<br />
@@ -199,14 +245,16 @@ class PaginaQuiz extends React.Component {
 					<div className="col-6 lado-direito">
 
 						<div class="imagem-container">
-							<img src={doguinio} alt="Imagem" />
+							<img src={doguinio} alt="Imagem" style={{height: '85vh'}} />
 							{JANELAS.map((item, _) =>
 								<div
-									title={item.title}
 									className={item.className}
-									onMouseOver={() => this.setState({ selectedArea: item.janela })}
-									onMouseLeave={() => this.setState({ selectedArea: -1 })}
+									onMouseLeave={() => this.setState({ selectedArea: -1, janelaAberta: false })}
 									onClick={() => {
+										if(!this.state.janelaAberta) {
+											this.setState({ selectedArea: item.janela, janelaAberta: true })
+											return
+										}
 										let animaisTemp = this.state.animais;
 										let temp = animal
 										temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
@@ -228,63 +276,7 @@ class PaginaQuiz extends React.Component {
 						</div>
 					</div>
 				</div>
-				<Modal show={this.state.modalFeedback}>
-					<Modal.Header><h3>Feedback</h3></Modal.Header>
-					<Modal.Body>
-						{this.state.animais.map((a, _) => {
-							return (
-								<div className="mb-2">
-									<table className="table table-striped">
-										<thead>
-											<th>Animal {_ + 1}</th>
-											<th>Usuário</th>
-											<th>Resposta</th>
-										</thead>
-										<tbody>
-											{[0, 1, 2, 3].map(i => {
-												let resposta = ''
-												let check = false
-												if (a.imgs[i].clicked == true) {
-													resposta = <h6>{JANELAS[i].title}: Tem líquido</h6>
-													check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
-												} else if (a.imgs[i].clicked == false) {
-													resposta = <h6>{JANELAS[i].title}: Não tem líquido</h6>
-													check = Boolean(a.imgs[i].clicked) == a.imgs[i].temLiquido
-												} else if (a.imgs[i].clicked == null) {
-													resposta = <h6 className='text-secondary'>{JANELAS[i].title}: Sem resposta</h6>
-												}
-												return <tr>
-													<td>{resposta}</td>
-													<td>
-														{check ?
-															<i className="bi bi-check-circle-fill text-success" /> :
-															<i className="bi bi-x-circle-fill text-danger" />
-														}
-													</td>
-													<td>
-														{a.imgs[i].temLiquido ? "Tem Líquido" : "Não tem Líquido"}
-													</td>
-												</tr>
-											}
-											)}
-											<tr>
-												<td>Pontuação</td>
-												<td>{a.pontuacaoSugerida || 0}</td>
-												<td>{a ? a.pontuacao : 0}</td>
-											</tr>
-										</tbody>
-									</table>
-									<hr />
-								</div>
-							)
-						})}
-
-					</Modal.Body>
-					<Modal.Footer>
-						<Button variant="danger" size='sm' onClick={() => window.location.href = '/'} >Voltar a Página Inicial</Button>
-						<Button onClick={() => window.location.reload()} size='sm' >Tentar novamente</Button>
-					</Modal.Footer>
-				</Modal>
+				<ModalFeedback show={this.state.modalFeedback} animais={this.state.animais}/> 
 			</div >
 		);
 	}

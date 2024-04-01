@@ -1,0 +1,83 @@
+.paginaInicial {
+  position: absolute;
+  top: 40%;
+  left: 40%;
+}
+.titulo,
+.botao,
+.configuracoes {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+h2,
+button {
+  font-family: "Shadows Into Light";
+}
+
+h2 {
+  font-size: 30px;
+}
+
+.div-geral {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100vh; /* Para ocupar a altura total da tela */
+}
+
+.imagem {   
+  object-fit: fill;
+}
+
+.imagem-direita { 
+  height: 700;
+  width: 300;
+  position: static;
+}
+
+.norte,
+.oeste,
+.leste,
+.sul {
+  position: absolute; 
+  border-radius: 25px; 
+  opacity: 0.9;
+  width: 60px;
+  height: 60px;
+}
+
+.norte {
+  background-color: red; 
+  margin-top: 85px; 
+  left: 420px; 
+}
+
+.oeste {
+  background-color: blue;
+  margin-top: 155px; 
+  left: 340px; 
+}
+
+.leste {
+  background-color: green;
+  margin-top: 155px;
+  left: 50%; 
+  top: 50%;
+  transform: translate(-50%, -50%);
+} 
+
+.sul {
+  background-color: black;
+  top: 280px;
+  left: 420px; 
+}
+
+.botoes {
+  width: 100px;
+  height: 50px;
+  display: inline-block;
+}
+

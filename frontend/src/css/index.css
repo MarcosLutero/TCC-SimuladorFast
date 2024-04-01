@@ -50,7 +50,7 @@ h2 {
 }
 
 .imagem-container img {
-  max-width: 96%; /* A imagem terá no máximo a largura do contêiner */
+  max-width: 90%; /* A imagem terá no máximo a largura do contêiner */
   max-height: 100%; /* A imagem terá no máximo a altura do contêiner */
 }
 
@@ -77,34 +77,34 @@ h2 {
 .cc,
 .hr {
   position: absolute; 
-  border-radius: 55px; 
+  border-radius: 75px; 
   opacity: 0.01;
-  padding: 35px;
+  padding: 65px;
   transform: translate(-50%, -50%);
 }
 
 .hd {
   background-color: blue;
-  top: 50%;
-  left: 20%;
+  top: 12%;
+  left: 57%;
 }
 
 .er {
   background-color: black;
-  top: 36%;
-  left: 40%;
+  top: 43%;
+  left: 71%;
 }
 
 .cc {
   background-color: green; 
   left: 55%; 
-  top: 53%; 
+  top: 70%; 
 }
 
 .hr {
   background-color: red; 
-  top: 63%;
-  left: 37%;
+  top: 36%;
+  left: 45%;
 }
 
 .botoes {

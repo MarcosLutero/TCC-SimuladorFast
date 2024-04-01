@@ -1,10 +1,10 @@
 import React from 'react'
 import { Button, Modal } from 'react-bootstrap'
-import axios from 'axios';
+import { atualizarAnimalReq, atualizarImagemAnimalReq, cadastrarAnimalReq, cadastrarImagemAnimalReq, deletarImagemAnimalReq, listarImagensAnimalReq } from '../api/animal';
 
 const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
-const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "", lista_janelas: [] }
+const DEFAULT_ANIMAL_DATA = { pontuacao: 0, tipo: "", isActive: true, lista_janelas: [] }
 const DEFAULT_IMAGEM_DATA = { janela: '', temLiquido: false, file: {}, caminho: "" }
 
 
@@ -14,6 +14,7 @@ export default function ModalAnimal(props) {
 
     const [openModalAnimal, setOpenModalAnimal] = React.useState(false)
     const [openModalImagem, setOpenModalImagem] = React.useState(false)
+    const [abrirModalConfirmar, setAbrirModalConfirmar] = React.useState(false)
     const [animalData, setAnimalData] = React.useState(DEFAULT_ANIMAL_DATA)
     const [imagemData, setImagemData] = React.useState(DEFAULT_IMAGEM_DATA)
     const [imagens, setImagens] = React.useState([])
@@ -21,19 +22,19 @@ export default function ModalAnimal(props) {
     const [imgEdit, setImgEdit] = React.useState(false)
 
     function getImagens(idAnimal) {
-        let url = `${API_URL}/animal/imagens/${idAnimal}`
-        axios.get(url)
+        listarImagensAnimalReq(idAnimal)
             .then(resp => {
-                setImagens(resp.data["imgs"])
+                setImagens(resp["imgs"])
                 let pontuacao = 0
                 let lista_janelas = []
-                resp.data["imgs"].map(img => {
+                resp["imgs"].map(img => {
                     if (!lista_janelas.includes(img.janela)) {
                         lista_janelas.push(img.janela)
                     }
                     if (img.temLiquido) {
                         pontuacao += 1
                     }
+                    return ''
                 })
 
                 setAnimalData({ ...resp.data, lista_janelas, pontuacao })
@@ -43,9 +44,10 @@ export default function ModalAnimal(props) {
 
     function onOpenModalAnimal() {
         let temp = DEFAULT_ANIMAL_DATA
-        if (props.edit) { 
+        if (props.edit) {
             temp = {
-                tipo: props.animal.tipo
+                tipo: props.animal.tipo,
+                isActive: props.animal.isActive
             }
             getImagens(props.animal.id)
         }
@@ -54,7 +56,6 @@ export default function ModalAnimal(props) {
     }
 
     function onOpenModalImagem(img = false) {
-
         if (img) {
             setImgSelected(img)
             setImagemData({
@@ -73,11 +74,21 @@ export default function ModalAnimal(props) {
         setOpenModalImagem(true)
     }
 
+    function openModalConfirmar(img) {
+        setImgSelected(img)
+        setOpenModalAnimal(false)
+        setAbrirModalConfirmar(true)
+    }
+
+    function closeModalConfirmar() {
+        setImgSelected({})
+        setOpenModalAnimal(true)
+        setAbrirModalConfirmar(false)
+    }
+
     function createUpdateAnimal() {
-        let url = `${API_URL}/animais/`
         if (props.edit) {
-            url += props.animal.id
-            axios.put(url, animalData)
+            atualizarAnimalReq(props.animal.id, animalData)
                 .then((resp) => {
                     if (props.onCreateEdit) props.onCreateEdit()
                     setOpenModalAnimal(false)
@@ -85,12 +96,10 @@ export default function ModalAnimal(props) {
                 .catch((err) => {
                     console.log(err);
                 });
-
-
             return
         }
 
-        axios.post(url, animalData)
+        cadastrarAnimalReq(animalData)
             .then((resp) => {
                 if (props.onCreateEdit) props.onCreateEdit()
                 setOpenModalAnimal(false)
@@ -101,19 +110,12 @@ export default function ModalAnimal(props) {
     }
 
     function createUpdateImagem() {
-        let url = `${API_URL}/animal/${props.animal.id}/imagens/`
-        let headers = {
-            "content-type": "multipart/form-data"
-        }
-
         const formData = new FormData();
         formData.append("janela", imagemData.janela)
         formData.append("temLiquido", imagemData.temLiquido || false)
         formData.append("file", imagemData.file);
-
         if (imgEdit) {
-            url += imgSelected.id
-            axios.put(url, formData, { headers })
+            atualizarImagemAnimalReq(props.animal.id, imgSelected.id, formData)
                 .then((resp) => {
                     getImagens(props.animal.id)
                     setOpenModalImagem(false)
@@ -125,14 +127,9 @@ export default function ModalAnimal(props) {
                 .catch((err) => {
                     console.log(err);
                 });
-
-
             return
         }
-
-
-
-        axios.post(url, formData, { headers })
+        cadastrarImagemAnimalReq(props.animal.id, formData)
             .then((resp) => {
                 getImagens(props.animal.id)
                 setOpenModalImagem(false)
@@ -143,13 +140,18 @@ export default function ModalAnimal(props) {
             });
     }
 
-    function deletarImagem(img) {
-        let url = `${API_URL}/animal/${img.animal}/imagens/${img.id}`
-        axios.delete(url)
+    function deletarImagem() {
+        deletarImagemAnimalReq(imgSelected.animal, imgSelected.id)
             .then(resp => {
-                getImagens(img.animal)
+                getImagens(imgSelected.animal)
+                .then(subResp => {
+                    closeModalConfirmar()
+                })
+                .catch(e => {
+                    closeModalConfirmar()
+                })
             })
-            .catch(err => console.log(err))
+            .catch(err => closeModalConfirmar())
     }
 
     const action = props.edit ? "Editar" : "Cadastrar"
@@ -187,13 +189,15 @@ export default function ModalAnimal(props) {
                             />
                         </div>
                         <div className="form-group col-6">
-                            <label>Pontuação</label>
-                            <input
-                                className="form-control"
-                                type='number'
-                                disabled
-                                value={animalData.pontuacao}
-                            />
+                            <label>Status</label>
+                            <select
+                                className='form-control'
+                                defaultValue={animalData.isActive}
+                                onChange={(e) => setAnimalData({ ...animalData, isActive: e.target.value === "true" })}
+                            >
+                                <option value='true'>Ativo</option>
+                                <option value='false'>Inativo</option>
+                            </select>
                         </div>
                     </div>
 
@@ -250,7 +254,7 @@ export default function ModalAnimal(props) {
                                             <i
                                                 className="bi-trash text-danger"
                                                 style={{ cursor: "pointer" }}
-                                                onClick={() => deletarImagem(img)}
+                                                onClick={() => openModalConfirmar(img)}
                                             />
                                         </div>
                                     </td>
@@ -288,7 +292,7 @@ export default function ModalAnimal(props) {
                         >   <option value=''>Selecionar</option>
                             {["HD", "HR", "ER", "CC"].map((i, _) => {
                                 if (imgEdit) {
-                                    if (_ == imagemData.janela) {
+                                    if (_ === imagemData.janela) {
                                         return <option value={_} selected={true}>{i}</option>
                                     }
                                 }
@@ -296,7 +300,7 @@ export default function ModalAnimal(props) {
                                 if (disabled) {
                                     return <div></div>
                                 }
-                                return <option value={_} selected={_}>{i}</option>
+                                return <option key={`areas_select_${_}`} value={_} selected={_}>{i}</option>
                             })}
                         </select>
                     </div>
@@ -340,7 +344,7 @@ export default function ModalAnimal(props) {
                     <Button
                         className='mt-2 float-right'
                         size='sm'
-                        disabled={imagemData.janela == ""}
+                        disabled={imagemData.janela === ""}
                         onClick={createUpdateImagem}
                     >
                         {imgEdit ? "Editar" : 'Cadastrar'}
@@ -348,6 +352,38 @@ export default function ModalAnimal(props) {
                 </div>
 
             </Modal.Body>
+        </Modal>
+        <Modal
+            show={abrirModalConfirmar}
+            onHide={closeModalConfirmar}
+            size='lg'
+        >
+            <Modal.Header closeButton>
+
+            </Modal.Header>
+            <Modal.Body>
+                <h4>Tem Certeza que deseja excluir essa imagem?</h4>
+            </Modal.Body>
+            <Modal.Footer>
+                <div className='d-flex flex-row-reverse'>
+                    <Button
+                        className='mt-2 mr-2'
+                        size='sm'
+                        variant='primary'
+                        onClick={closeModalConfirmar}
+                    >
+                        Voltar
+                    </Button>
+                    <Button
+                        className='mt-2  float-right'
+                        size='sm'
+                        variant='danger'
+                        onClick={deletarImagem}
+                    >
+                        Deletar
+                    </Button>
+                </div>
+            </Modal.Footer>
         </Modal>
     </div>
 } 

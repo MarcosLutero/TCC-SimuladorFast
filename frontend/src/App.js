@@ -1,93 +1,49 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import {PaginaInicial, Quiz, AdminAnimais} from "./partial/pages" 
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { PaginaInicial, Quiz, AdminAnimais, Login, FeedbackPage, UsuariosPage, Cadastro } from "./pages";
 
-class App extends React.Component { 
-  render() {
-    return (
-      <>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={ <PaginaInicial /> } />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/admin/animais" element={<AdminAnimais /> } />
-          </Routes>
-        </BrowserRouter>
-      </>
-    );
+function PrivateRoute({ element: Component, level }) {
+  const [nivelAcesso, setNivelAcesso] = useState(null);
+
+  useEffect(() => {
+    const storedNivelAcesso = sessionStorage.getItem("nivelAcesso");
+    if (!storedNivelAcesso) {
+      // Não há nível de acesso armazenado, redirecionar para a página de login
+      setNivelAcesso(0);
+    } else if (storedNivelAcesso < level) {
+      // Nível de acesso insuficiente, redirecionar para a página inicial
+      setNivelAcesso(1);
+    } else {
+      setNivelAcesso(level);
+    }
+  }, [level]);
+
+  if (nivelAcesso === null) {
+    // Aguarde até que o nível de acesso seja determinado
+    return null;
   }
+
+  if (nivelAcesso < level) {
+    // Redirecionar para a página de login ou página inicial, conforme necessário
+    return <Navigate to={nivelAcesso === 0 ? "/login" : "/"} replace />;
+  }
+
+  // Renderizar o componente protegido
+  return <Component />;
 }
 
-export default App;
-
-// export default class App extends React.Component {
-//   constructor(props) {
-//     super(props)
-//     this.state = {
-//       loading: false,
-//       selected: 0,
-//       avatarType: 0,
-//       imgs: [
-
-//       ]
-//     }
-//     this.onImgClick = this.onImgClick.bind(this)
-//     this.onLoadImage = this.onLoadImage.bind(this)
-//   }
-//   onImgClick(e) {
-//     console.log(e)
-//   }
-//   onLoadImage(e) {
-//     setTimeout(() => {
-//       console.log("height", e.target.height)
-//       console.log("width", e.target.width)
-//     }, 3000)
-//   }
-
-//   getImgs() {
-//     fetch('http://localhost:8080/animal/3/imagens')
-//       .then(response => {
-//         response.json()
-//         .then(data => {
-//           let imgs = data.map(i => i.caminho)
-//           this.setState({imgs})
-//         })
-//         this.setState({ loading: false })
-//       })
-//       .catch(response => {
-//         console.log(response)
-//         this.setState({ loading: false })
-//       });
-//   }
-
-//   componentWillUnmount() {
-//     this.getImgs()
-//   }
-
-//   render() {
-//     return <div className="container">
-//       <div className={this.state.loading ? "row" : "d-none"}>
-//         <div className="col-12">
-//           <p className="text-center">
-//             <i className="fa-solid fa-2x fa-spinner fa-spin"></i>
-//           </p>
-//         </div>
-//       </div>
-//       <div className={!this.state.loading ? "row py-5" : "d-none"}>
-//         <div className="col-md-6 col-xs-12 col-lg-6">
-//           <img
-//             alt='text'
-//             style={{
-//               cursor: 'pointer'
-//             }}
-//             onLoad={this.onLoadImage}
-//             onClick={this.onImgClick} className="img-fluid" src={this.state.imgs[0]} />
-//         </div>
-//         <div className="col-md-6 col-xs-12 col-lg-6">
-//           <img alt='text 2' className="img-fluid" src={this.state.imgs[1]} />
-//         </div>
-//       </div>
-//       <button onClick={() => this.getImgs()}>asda</button>
-//     </div>
-//   }
-// }
+export default function App(props) {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<PrivateRoute element={Login} level={0} />} />
+        <Route path="/cadastro" element={<PrivateRoute element={Cadastro} level={0} />} />
+        <Route path="/" element={<PrivateRoute element={PaginaInicial} level={1} />} />
+        <Route path="/quiz" element={<PrivateRoute element={Quiz} level={1} />} />
+        <Route path="/feedbacks" element={<PrivateRoute element={FeedbackPage} level={2} />} />
+        <Route path="/animais" element={<PrivateRoute element={AdminAnimais} level={2} />} />
+        <Route path="/admin/usuarios" element={<PrivateRoute element={UsuariosPage} level={3} />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

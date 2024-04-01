@@ -1,70 +1,62 @@
-# Getting Started with Create React App
+# simulador-afast-backend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Instalar Node.jss
 
-## Available Scripts
+### No Windows:
 
-In the project directory, you can run:
+1. **Acesse o Site do Node.js:**
+   Abra um navegador da web e acesse o site oficial do Node.js em [nodejs.org](https://nodejs.org/).
 
-### `npm start`
+2. **Baixe o Instalador:**
+   Na página inicial do Node.js, clique no botão de download que corresponde à versão LTS (Long Term Support) recomendada para a maioria dos usuários.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+3. **Execute o Instalador:**
+   Após o download ser concluído, execute o arquivo do instalador que você baixou. Siga as instruções na tela para completar o processo de instalação.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+4. **Verificação da Instalação:**
+   Após a instalação, abra um terminal (prompt de comando) e digite os seguintes comandos para verificar se o Node.js e o npm (gerenciador de pacotes do Node.js) foram instalados corretamente:
 
-### `npm test`
+   ```
+   node -v
+   npm -v
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### No Ubuntu:
 
-### `npm run build`
+1. **Instalação via Gerenciador de Pacotes:**
+Abra um terminal e execute os seguintes comandos para instalar o Node.js e o npm através do gerenciador de pacotes apt:
+    ```
+    sudo apt update
+    sudo apt install nodejs npm
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Verificação da Instalação:**
+Após a instalação, você pode verificar se o Node.js e o npm foram instalados corretamente digitando os seguintes comandos em um terminal:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    ```
+    node -v
+    npm -v
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Uso
 
-### `npm run eject`
+1. **Clone o projeto:**
+   
+   ```git clone <URL_REPOSITORIO>```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. **Acesse o projeto**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    ```cd /TCC-SimuladorFast/frontend```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. **Configure as variaveis do projeto**
+    Crie o arquivo .env:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    ```REACT_APP_API_URL=http://localhost:8080```
 
-## Learn More
+4. **Instale as dependencias:**
+   
+   ```npm install```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+5. **Execute a aplicação:**
+   
+   ```npm start```
