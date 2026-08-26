@@ -31,12 +31,14 @@ class PaginaInicial extends React.Component {
         qtd: 1
       }
     } else {
-      config = JSON.parse(config)
+      try {
+        config = JSON.parse(config)
+      } catch (e) {
+        config = { tempo: 3, qtd: 1 }
+      }
     }
 
-    config.config = config
-
-    this.setState({ ...config })
+    this.setState({ config, newTempo: config.tempo, newQtd: config.qtd })
   }
 
   saveConfig() {
@@ -50,15 +52,23 @@ class PaginaInicial extends React.Component {
 
   abrirHistoricoModal() {
     this.setState({ historicoModal: true })
-    let usuario = sessionStorage.getItem("usuario")
-    usuario = JSON.parse(usuario)
-    listarFeedbacksReq(usuario.id)
-      .then(resp => {
-        this.setState({ historico: resp })
-      })
-      .catch(e => {
-        console.log("deu ruim 23")
-      })
+    try {
+      let usuario = sessionStorage.getItem("usuario")
+      usuario = JSON.parse(usuario)
+      if (!usuario || !usuario.id) {
+        console.error("Usuário não encontrado no sessionStorage")
+        return
+      }
+      listarFeedbacksReq(usuario.id)
+        .then(resp => {
+          this.setState({ historico: resp })
+        })
+        .catch(e => {
+          console.error("Erro ao carregar histórico", e)
+        })
+    } catch (e) {
+      console.error("Erro ao parsear usuário", e)
+    }
   }
 
   componentDidMount() {

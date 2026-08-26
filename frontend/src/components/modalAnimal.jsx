@@ -24,20 +24,20 @@ export default function ModalAnimal(props) {
     function getImagens(idAnimal) {
         listarImagensAnimalReq(idAnimal)
             .then(resp => {
-                setImagens(resp["imgs"])
+                const imgs = resp.imgs || resp["imgs"] || [];
+                setImagens(imgs)
                 let pontuacao = 0
                 let lista_janelas = []
-                resp["imgs"].map(img => {
+                imgs.forEach(img => {
                     if (!lista_janelas.includes(img.janela)) {
                         lista_janelas.push(img.janela)
                     }
                     if (img.temLiquido) {
                         pontuacao += 1
                     }
-                    return ''
                 })
 
-                setAnimalData({ ...resp.data, lista_janelas, pontuacao })
+                setAnimalData(prev => ({ ...prev, tipo: resp.tipo, isActive: resp.isActive, lista_janelas, pontuacao }))
             })
             .catch(err => console.log(err))
     }
@@ -286,21 +286,21 @@ export default function ModalAnimal(props) {
                             onChange={(e) => {
                                 setImagemData({
                                     janela: e.target.value,
-                                    temliquido: imagemData.temliquido
+                                    temLiquido: imagemData.temLiquido,
+                                    file: imagemData.file,
+                                    caminho: imagemData.caminho
                                 })
                             }}
                         >   <option value=''>Selecionar</option>
                             {["HD", "HR", "ER", "CC"].map((i, _) => {
-                                if (imgEdit) {
-                                    if (_ === imagemData.janela) {
-                                        return <option value={_} selected={true}>{i}</option>
-                                    }
+                                if (imgEdit && _ === Number(imagemData.janela)) {
+                                    return <option key={`areas_select_${_}`} value={_}>{i}</option>
                                 }
-                                let disabled = animalData.lista_janelas ? animalData.lista_janelas.includes(_) : true
+                                let disabled = animalData.lista_janelas ? animalData.lista_janelas.includes(_) : false
                                 if (disabled) {
-                                    return <div></div>
+                                    return null
                                 }
-                                return <option key={`areas_select_${_}`} value={_} selected={_}>{i}</option>
+                                return <option key={`areas_select_${_}`} value={_}>{i}</option>
                             })}
                         </select>
                     </div>

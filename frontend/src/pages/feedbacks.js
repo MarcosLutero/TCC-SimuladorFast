@@ -4,7 +4,7 @@ import { listarFeedbacksReq } from "../api/feedback";
 import CustomFeedbackModal from "../components/customFeedbackModal";
 import MenuAreas from "../components/menuAreas";
 
-export default class AdminUsuarios extends React.Component {
+export default class FeedbackPage extends React.Component {
 
   constructor(props) {
     super(props);

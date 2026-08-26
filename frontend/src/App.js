@@ -8,10 +8,18 @@ function PrivateRoute({ element: Component, level }) {
   useEffect(() => {
     const storedRaw = sessionStorage.getItem("nivelAcesso");
     const storedNivelAcesso = storedRaw !== null ? parseInt(storedRaw, 10) : null;
+    // level 0 = páginas públicas (login/cadastro): se já logado, bloqueia e manda para home
+    if (level === 0) {
+      if (storedNivelAcesso !== null && !isNaN(storedNivelAcesso) && storedNivelAcesso > 0) {
+        setNivelAcesso(1); // já logado → será < level? não, vamos marcar como 1 para redirecionar fora
+      } else {
+        setNivelAcesso(0);
+      }
+      return;
+    }
     if (storedNivelAcesso === null || isNaN(storedNivelAcesso)) {
       setNivelAcesso(0);
     } else if (storedNivelAcesso < level) {
-      // Nível insuficiente: se já logado, vai para "/", se não logado, para "/login"
       setNivelAcesso(storedNivelAcesso === 0 ? 0 : 1);
     } else {
       setNivelAcesso(level);
@@ -19,16 +27,17 @@ function PrivateRoute({ element: Component, level }) {
   }, [level]);
 
   if (nivelAcesso === null) {
-    // Aguarde até que o nível de acesso seja determinado
     return null;
   }
 
+  if (level === 0 && nivelAcesso > 0) {
+    return <Navigate to="/" replace />;
+  }
+
   if (nivelAcesso < level) {
-    // Redirecionar para a página de login ou página inicial, conforme necessário
     return <Navigate to={nivelAcesso === 0 ? "/login" : "/"} replace />;
   }
 
-  // Renderizar o componente protegido
   return <Component />;
 }
 

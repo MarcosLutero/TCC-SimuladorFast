@@ -58,42 +58,51 @@ class PaginaQuiz extends React.Component {
 	flag = false;
 
 	getAnimais() {
-		let config = window.sessionStorage.getItem("config")
-		if (!config) {
-			config = {
-				tempo: 180,
-				qtd: 1
-			}
+		let configRaw = window.sessionStorage.getItem("config")
+		let config
+		if (!configRaw) {
+			config = { tempo: 3, qtd: 1 }
 		} else {
-			config = JSON.parse(config)
-			config.tempo = config.tempo * 60
+			try {
+				config = JSON.parse(configRaw)
+			} catch (e) {
+				config = { tempo: 3, qtd: 1 }
+			}
 		}
+		const tempoSegundos = (config.tempo || 3) * 60
+		const qtd = config.qtd || 1
 
-		this.setState({ tempo: config.tempo })
+		this.setState({ tempo: tempoSegundos, tempoOriginal: tempoSegundos })
 
-		sortearAnimaisReq(config.qtd)
+		sortearAnimaisReq(qtd)
 		.then((animais) => {
-			this.setState({ animais });
+			const animaisComTempo = animais.map(a => ({ ...a, pontuacaoSugerida: 0, tempo: 0, imgs: a.imgs.map(img => ({ ...img, clicked: undefined })) }))
+			this.setState({ animais: animaisComTempo });
 		})
 		.catch((err) => {
-			console.log(err);
+			console.error("Erro ao sortear animais", err);
 		});
 	}
 
 	componentDidMount() {
 		this.getAnimais();
-		if (!this.flag)
+		if (!this.flag) {
+			this.flag = true;
 			this.setState({
-				tempoOriginal: this.state.tempo,
 				timer: setInterval(() => {
-					if (this.state.tempo > 0) {
-						this.setState((state) => ({ tempo: state.tempo - 1 }));
-					} else {
-						this.abrirModalFeedback()
-					}
+					this.setState((state) => {
+						if (state.tempo > 0) {
+							return { tempo: state.tempo - 1 }
+						} else {
+							if (!state.modalFeedback) {
+								this.abrirModalFeedback()
+							}
+							return null
+						}
+					});
 				}, 1000),
 			});
-		this.flag = true;
+		}
 	}
 
 	componentWillUnmount() {
@@ -166,9 +175,6 @@ class PaginaQuiz extends React.Component {
 	render() {
 		const { selectedAnimal, selectedArea } = this.state;
 		let animal = this.state.animais[selectedAnimal];
-		if (animal && !animal.pontuacaoSugerida) {
-			animal.pontuacaoSugerida = 0
-		}
 		return (
 			<div className="text-light" style={{ backgroundColor: "black", height: "100vh" }} >
 				<div className='col-12 pt-3 d-flex justify-content-between'>
@@ -248,6 +254,7 @@ class PaginaQuiz extends React.Component {
 							<img src={doguinio} alt="Imagem" style={{height: '85vh'}} />
 							{JANELAS.map((item, _) =>
 								<div
+									key={item.janela}
 									className={item.className}
 									onMouseLeave={() => this.setState({ selectedArea: -1, janelaAberta: false })}
 									onClick={() => {
@@ -255,19 +262,21 @@ class PaginaQuiz extends React.Component {
 											this.setState({ selectedArea: item.janela, janelaAberta: true })
 											return
 										}
-										let animaisTemp = this.state.animais;
-										let temp = animal
-										temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
-
-										let score = temp.pontuacaoSugerida
-										if (temp.imgs[selectedArea].clicked) {
-											score += 1
-										} else {
-											score -= 1
-										}
-										animaisTemp[this.state.selectedAnimal].pontuacaoSugerida = score
-										animaisTemp[this.state.selectedAnimal] = temp
-										this.setState({ animais: animaisTemp })
+										this.setState(prevState => {
+											const animaisTemp = prevState.animais.map((a, idx) => {
+												if (idx !== prevState.selectedAnimal) return a
+												const novosImgs = a.imgs.map((img, i) => {
+													if (i !== prevState.selectedArea) return img
+													return { ...img, clicked: !img.clicked }
+												})
+												const clickedAgora = novosImgs[prevState.selectedArea].clicked
+												let score = a.pontuacaoSugerida || 0
+												if (clickedAgora) score += 1
+												else score -= 1
+												return { ...a, imgs: novosImgs, pontuacaoSugerida: score }
+											})
+											return { animais: animaisTemp }
+										})
 									}}
 								>
 									{item.title}
