@@ -6,13 +6,13 @@ function PrivateRoute({ element: Component, level }) {
   const [nivelAcesso, setNivelAcesso] = useState(null);
 
   useEffect(() => {
-    const storedNivelAcesso = sessionStorage.getItem("nivelAcesso");
-    if (!storedNivelAcesso) {
-      // Não há nível de acesso armazenado, redirecionar para a página de login
+    const storedRaw = sessionStorage.getItem("nivelAcesso");
+    const storedNivelAcesso = storedRaw !== null ? parseInt(storedRaw, 10) : null;
+    if (storedNivelAcesso === null || isNaN(storedNivelAcesso)) {
       setNivelAcesso(0);
     } else if (storedNivelAcesso < level) {
-      // Nível de acesso insuficiente, redirecionar para a página inicial
-      setNivelAcesso(1);
+      // Nível insuficiente: se já logado, vai para "/", se não logado, para "/login"
+      setNivelAcesso(storedNivelAcesso === 0 ? 0 : 1);
     } else {
       setNivelAcesso(level);
     }
