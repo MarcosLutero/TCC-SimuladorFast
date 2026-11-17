@@ -47,15 +47,28 @@ class PaginaQuiz extends React.Component {
 			selectedArea: -1,
 			perfil: doguinio,
 			tempo: 180,
+			tempoOriginal: 180,
 			timer: null,
 			score: 0,
 			animais: [],
-			modalFeedback: false
+			modalFeedback: false,
+			feedbackEnviado: false
 		};
 
 	}
 
-	flag = false;
+	timerId = null;
+	feedbackEnviadoRef = false;
+
+	pararTimer() {
+		if (this.timerId) {
+			clearInterval(this.timerId);
+			this.timerId = null;
+		}
+		if (this.state.timer) {
+			clearInterval(this.state.timer);
+		}
+	}
 
 	getAnimais() {
 		let config = window.sessionStorage.getItem("config")
@@ -69,7 +82,7 @@ class PaginaQuiz extends React.Component {
 			config.tempo = config.tempo * 60
 		}
 
-		this.setState({ tempo: config.tempo })
+		this.setState({ tempo: config.tempo, tempoOriginal: config.tempo })
 
 		sortearAnimaisReq(config.qtd)
 		.then((animais) => {
@@ -82,24 +95,19 @@ class PaginaQuiz extends React.Component {
 
 	componentDidMount() {
 		this.getAnimais();
-		if (!this.flag)
-			this.setState({
-				tempoOriginal: this.state.tempo,
-				timer: setInterval(() => {
-					if (this.state.tempo > 0) {
-						this.setState((state) => ({ tempo: state.tempo - 1 }));
-					} else {
-						this.abrirModalFeedback()
-					}
-				}, 1000),
-			});
-		this.flag = true;
+		this.pararTimer();
+		this.timerId = setInterval(() => {
+			if (this.state.tempo > 0) {
+				this.setState((state) => ({ tempo: state.tempo - 1 }));
+			} else {
+				this.abrirModalFeedback();
+			}
+		}, 1000);
+		this.setState({ timer: this.timerId });
 	}
 
 	componentWillUnmount() {
-		if (this.state.timer) {
-			clearInterval(this.state.timer);
-		}
+		this.pararTimer();
 	}
 
 	formatarTempo() {
@@ -111,17 +119,37 @@ class PaginaQuiz extends React.Component {
 		return `${minutes}:${seconds}`;
 	}
 
-	abrirModalFeedback() {
-		this.setState({ modalFeedback: true })
-		this.enviarFeedback()
+	abrirModalFeedback(animaisOverride) {
+		this.pararTimer();
+		if (this.feedbackEnviadoRef) {
+			return;
+		}
+		this.feedbackEnviadoRef = true;
+
+		const { selectedAnimal, tempo, tempoOriginal } = this.state;
+		const listaAnimais = [...(animaisOverride || this.state.animais)];
+		if (listaAnimais[selectedAnimal] && listaAnimais[selectedAnimal].tempo == null) {
+			const baseTempo = tempoOriginal ?? tempo;
+			listaAnimais[selectedAnimal] = {
+				...listaAnimais[selectedAnimal],
+				tempo: Math.max(0, baseTempo - tempo),
+			};
+		}
+
+		this.setState({ modalFeedback: true, feedbackEnviado: true, animais: listaAnimais });
+		this.enviarFeedback(listaAnimais);
 	}
 
-	enviarFeedback() {
+	enviarFeedback(animaisLista = this.state.animais) {
+		if (!animaisLista || animaisLista.length === 0) {
+			return;
+		}
 		let usuario = sessionStorage.getItem("usuario")
 		usuario = JSON.parse(usuario)
 		let tempoTotal = 0
-		let data = this.state.animais.map(animal => {
-			tempoTotal += animal.tempo
+		let data = animaisLista.map(animal => {
+			const tempoAnimal = animal.tempo ?? 0
+			tempoTotal += tempoAnimal
 			
 			let escore = 0
 			let escoreCorreto = animal.pontuacao
@@ -145,7 +173,7 @@ class PaginaQuiz extends React.Component {
 
 			return ({
 				idAnimal: animal.id,
-				tempo: animal.tempo,
+				tempo: tempoAnimal,
 				escore,
 				escoreCorreto,
 				janelas: janelasData
@@ -205,11 +233,14 @@ class PaginaQuiz extends React.Component {
 							</Button> : <div />}
 						</div>
 						{selectedAnimal + 1 === this.state.animais.length ? <Button
+							disabled={this.state.feedbackEnviado}
 							onClick={() => {
-								let { animais:tempAnimais, tempo } = this.state
-								tempAnimais[selectedAnimal].tempo = this.state.tempoOriginal - tempo
-								this.setState({ modalFeedback: true, animais: tempAnimais })
-								this.abrirModalFeedback()
+								let { animais: tempAnimais, tempo, tempoOriginal } = this.state
+								if (tempAnimais[selectedAnimal]) {
+									const baseTempo = tempoOriginal ?? tempo
+									tempAnimais[selectedAnimal].tempo = Math.max(0, baseTempo - tempo)
+								}
+								this.abrirModalFeedback(tempAnimais)
 							}}
 						>
 							Enviar
