@@ -35,6 +35,21 @@ function avg(sum, count) {
     return Math.round((sum * 10) / count) / 10;
 }
 
+function parseFiltroDataHoraMs(valor, isEnd) {
+    if (!valor) return null;
+    const str = String(valor).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const d = new Date(`${str}T${isEnd ? "23:59:59.999" : "00:00:00.000"}`);
+        return Number.isNaN(d.getTime()) ? null : d.getTime();
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(str)) {
+        const d = new Date(`${str}${isEnd ? ":59.999" : ":00.000"}`);
+        return Number.isNaN(d.getTime()) ? null : d.getTime();
+    }
+    const d = new Date(str);
+    return Number.isNaN(d.getTime()) ? null : d.getTime();
+}
+
 function toLocalDateStr(dateInput) {
     if (!dateInput) return null;
     const d = new Date(dateInput);
@@ -97,8 +112,8 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros, usuarios) {
         }
     });
 
-    const inicio = filtros?.inicio || null;
-    const fim = filtros?.fim || null;
+    const inicioMs = parseFiltroDataHoraMs(filtros?.inicio, false);
+    const fimMs = parseFiltroDataHoraMs(filtros?.fim, true);
     const usuarioFiltro = filtros?.usuarioId || null;
     const animalFiltro = filtros?.animalId ? Number(filtros.animalId) : null;
 
@@ -139,9 +154,10 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros, usuarios) {
         const nomeUsuario = f.usuario;
         if (usuarioFiltro && String(usuarioFiltro) !== String(nomeUsuario)) return;
 
+        const feedbackTime = f.createdAt ? new Date(f.createdAt).getTime() : NaN;
+        if (inicioMs !== null && (!Number.isFinite(feedbackTime) || feedbackTime < inicioMs)) return;
+        if (fimMs !== null && (!Number.isFinite(feedbackTime) || feedbackTime > fimMs)) return;
         const dataStr = toLocalDateStr(f.createdAt);
-        if (inicio && (!dataStr || dataStr < inicio)) return;
-        if (fim && (!dataStr || dataStr > fim)) return;
 
         let parsed;
         try {

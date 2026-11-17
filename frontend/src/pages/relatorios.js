@@ -66,8 +66,8 @@ export default function RelatoriosPage() {
 
   const aplicarFiltros = (e) => {
     e.preventDefault();
-    if (inicio && fim && inicio > fim) {
-      setErro("A data inicial não pode ser maior que a data final.");
+    if (inicio && fim && new Date(inicio) > new Date(fim)) {
+      setErro("A data/hora inicial não pode ser maior que a data/hora final.");
       return;
     }
     carregar({ inicio, fim, usuarioId, animalId });
@@ -230,15 +230,15 @@ export default function RelatoriosPage() {
           <Card.Body>
             <Form onSubmit={aplicarFiltros}>
               <Row className="g-2 align-items-end">
-                <Col xs={12} sm={6} md={2}>
-                  <Form.Label className="mb-1 small">Data início</Form.Label>
-                  <Form.Control type="date" size="sm" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                <Col xs={12} sm={6} lg={3}>
+                  <Form.Label className="mb-1 small">Data e hora início</Form.Label>
+                  <Form.Control type="datetime-local" size="sm" value={inicio} onChange={(e) => setInicio(e.target.value)} />
                 </Col>
-                <Col xs={12} sm={6} md={2}>
-                  <Form.Label className="mb-1 small">Data fim</Form.Label>
-                  <Form.Control type="date" size="sm" value={fim} onChange={(e) => setFim(e.target.value)} />
+                <Col xs={12} sm={6} lg={3}>
+                  <Form.Label className="mb-1 small">Data e hora fim</Form.Label>
+                  <Form.Control type="datetime-local" size="sm" value={fim} onChange={(e) => setFim(e.target.value)} />
                 </Col>
-                <Col xs={12} sm={6} md={3}>
+                <Col xs={12} sm={6} lg={2}>
                   <Form.Label className="mb-1 small">Aluno</Form.Label>
                   <Form.Select size="sm" value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
                     <option value="">Todos os alunos</option>
@@ -249,7 +249,7 @@ export default function RelatoriosPage() {
                     ))}
                   </Form.Select>
                 </Col>
-                <Col xs={12} sm={6} md={3}>
+                <Col xs={12} sm={6} lg={2}>
                   <Form.Label className="mb-1 small">Animal / Caso</Form.Label>
                   <Form.Select size="sm" value={animalId} onChange={(e) => setAnimalId(e.target.value)}>
                     <option value="">Todos os animais</option>
@@ -260,7 +260,7 @@ export default function RelatoriosPage() {
                     ))}
                   </Form.Select>
                 </Col>
-                <Col xs={12} md={2} className="d-flex gap-2">
+                <Col xs={12} lg={2} className="d-flex gap-2">
                   <Button type="submit" size="sm" variant="primary" className="w-100" style={{ fontFamily: "inherit" }}>
                     Filtrar
                   </Button>
