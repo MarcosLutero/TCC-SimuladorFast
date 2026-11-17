@@ -46,7 +46,7 @@ class PaginaQuiz extends React.Component {
 	timerId = null;
 	feedbackEnviadoRef = false;
 	cacheBust = Date.now();
-	isMounted = false;
+	_componentMounted = false;
 
 	pararTimer() {
 		if (this.timerId) {
@@ -85,7 +85,7 @@ class PaginaQuiz extends React.Component {
 		const vistos = this.lerAnimaisVistos();
 		sortearAnimaisReq(config.qtd, vistos)
 		.then((animaisResp) => {
-			if (!this.isMounted) return;
+			if (!this._componentMounted) return;
 			const lista = Array.isArray(animaisResp) ? animaisResp : [];
 			const animais = lista.filter((a, idx, arr) => arr.findIndex((x) => x.id === a.id) === idx);
 			const novosIds = animais.map((a) => a.id).filter((id) => id != null);
@@ -102,7 +102,7 @@ class PaginaQuiz extends React.Component {
 	}
 
 	componentDidMount() {
-		this.isMounted = true;
+		this._componentMounted = true;
 		this.getAnimais();
 		this.pararTimer();
 		this.timerId = setInterval(() => {
@@ -116,7 +116,7 @@ class PaginaQuiz extends React.Component {
 	}
 
 	componentWillUnmount() {
-		this.isMounted = false;
+		this._componentMounted = false;
 		this.pararTimer();
 	}
 
@@ -208,6 +208,10 @@ class PaginaQuiz extends React.Component {
 		if (animal && !animal.pontuacaoSugerida) {
 			animal.pontuacaoSugerida = 0
 		}
+		const imgAreaSelecionada =
+			animal && selectedArea !== -1 && Array.isArray(animal.imgs)
+				? animal.imgs.find((img) => img.janela === selectedArea) || animal.imgs[selectedArea]
+				: null;
 		return (
 			<div className="text-light" style={{ backgroundColor: "black", height: "100vh" }} >
 				<div className='col-12 pt-3 d-flex justify-content-between'>
@@ -263,16 +267,16 @@ class PaginaQuiz extends React.Component {
 				<div className="div-geral">
 					<div className="col-6 d-flex justify-content-around lado-esquerdo">
 						{
-							animal && this.state.selectedArea !== -1 && animal.imgs[selectedArea] ?
+							imgAreaSelecionada ?
 								<div className="text-light d-column text-center" style={{ top: 10 }}>
 									<label >
 										<strong>
-											Tem liquido? {animal.imgs[selectedArea].clicked === undefined ? "(Clique na area para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
+											Tem liquido? {imgAreaSelecionada.clicked === undefined ? "(Clique na area para responder)" : !imgAreaSelecionada.clicked ? "Não" : "Sim"}
 										</strong>
 									</label>
 									<br />
 									<Image
-										key={animal.imgs[selectedArea].caminho}
+										key={imgAreaSelecionada.caminho}
 										alt="imagem"
 										className="m-0 p-0 imagem-direita"
 										style={{
@@ -280,7 +284,7 @@ class PaginaQuiz extends React.Component {
 											width: "auto",
 											minHeight: "390px"
 										}}
-										src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}?t=${this.cacheBust}`}
+										src={`${CAMINHO_ARQUIVOS}${imgAreaSelecionada.caminho}?t=${this.cacheBust}`}
 									/>
 								</div>
 								: <h4><strong>Procure as areas</strong></h4>}
@@ -309,10 +313,16 @@ class PaginaQuiz extends React.Component {
 										}
 										let animaisTemp = this.state.animais;
 										let temp = animal
-										temp.imgs[selectedArea].clicked = !temp.imgs[selectedArea].clicked
+										const targetImg = Array.isArray(temp?.imgs)
+											? temp.imgs.find((img) => img.janela === selectedArea) || temp.imgs[selectedArea]
+											: null;
+										if (!targetImg) {
+											return;
+										}
+										targetImg.clicked = !targetImg.clicked
 
-										let score = temp.pontuacaoSugerida
-										if (temp.imgs[selectedArea].clicked) {
+										let score = temp.pontuacaoSugerida || 0
+										if (targetImg.clicked) {
 											score += 1
 										} else {
 											score -= 1
