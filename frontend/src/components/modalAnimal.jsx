@@ -247,7 +247,7 @@ export default function ModalAnimal(props) {
                                                 className="bi-image text-success"
                                                 style={{ cursor: "pointer" }}
                                                 onClick={() => {
-                                                    let url = `${CAMINHO_ARQUIVOS}${img.caminho}`
+                                                    let url = `${CAMINHO_ARQUIVOS}${img.caminho}?t=${Date.now()}`
                                                     window.open(url, "_blank")
                                                 }}
                                             />

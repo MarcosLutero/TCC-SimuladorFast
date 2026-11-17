@@ -59,6 +59,7 @@ class PaginaQuiz extends React.Component {
 
 	timerId = null;
 	feedbackEnviadoRef = false;
+	cacheBust = Date.now();
 
 	pararTimer() {
 		if (this.timerId) {
@@ -270,7 +271,7 @@ class PaginaQuiz extends React.Component {
 											width: "auto",
 											minHeight: "390px"
 										}}
-										src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}`}
+										src={`${CAMINHO_ARQUIVOS}${animal.imgs[selectedArea].caminho}?t=${this.cacheBust}`}
 									/>
 								</div>
 								: <h4><strong>Procure as areas</strong></h4>}
