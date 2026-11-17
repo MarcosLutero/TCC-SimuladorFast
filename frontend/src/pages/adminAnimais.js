@@ -215,6 +215,7 @@ export default function AdminAnimais() {
                               iconButton
                               edit
                               animal={animal}
+                              animais={animais}
                               onCreateEdit={carregarAnimais}
                             />
                             <i

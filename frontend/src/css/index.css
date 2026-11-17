@@ -43,17 +43,17 @@ h2 {
 
 .imagem-container {
   position: relative;
-  text-align: right; /* Alinha a imagem à direita */
-  flex-shrink: 0; /* Evita que a imagem diminua de tamanho */
-  margin-right: 10;
-  margin-top: 10;
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 10px;
 }
 
 .imagem-container img {
-  max-width: 90%; /* A imagem terá no máximo a largura do contêiner */
-  max-height: 100%; /* A imagem terá no máximo a altura do contêiner */
+  display: block;
+  max-height: 85vh;
+  max-width: 100%;
+  width: auto;
 }
-
 
 #meuBotao {
   position: absolute;
@@ -62,11 +62,11 @@ h2 {
   transform: translate(-50%, -50%);
 }
 
-.imagem {   
+.imagem {
   object-fit: fill;
 }
 
-.imagem-direita { 
+.imagem-direita {
   height: 700;
   width: 300;
   position: static;
@@ -76,35 +76,38 @@ h2 {
 .er,
 .cc,
 .hr {
-  position: absolute; 
-  border-radius: 75px; 
+  position: absolute;
+  width: 22%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
   opacity: 0.01;
-  padding: 65px;
   transform: translate(-50%, -50%);
+  cursor: pointer;
+  user-select: none;
 }
 
 .hd {
   background-color: blue;
   top: 12%;
-  left: 57%;
+  left: 52%;
 }
 
 .er {
   background-color: black;
   top: 36%;
-  left: 45%;
+  left: 39%;
 }
 
 .cc {
-  background-color: green; 
-  left: 55%; 
-  top: 70%; 
+  background-color: green;
+  left: 50%;
+  top: 70%;
 }
 
 .hr {
-  background-color: red; 
+  background-color: red;
   top: 43%;
-  left: 71%;
+  left: 67%;
 }
 
 .botoes {

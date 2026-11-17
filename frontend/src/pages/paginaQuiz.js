@@ -1,6 +1,5 @@
 import React from "react";
 import { Button, Image } from "react-bootstrap";
-import doguinio from "../img/doggo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faChevronRight,
@@ -10,29 +9,17 @@ import { Link } from "react-router-dom";
 import { sortearAnimaisReq } from "../api/animal";
 import ModalFeedback from "../components/modalFeedback";
 import { cadastrarFeedbackReq } from "../api/feedback";
+import {
+	DEFAULT_HOTSPOTS,
+	parseHotspotsConfig,
+	resolverImagemBaseUrl,
+} from "../constants/hotspots";
 
-const JANELAS = [
-	{
-		title: "HD",
-		className: "hd",
-		janela: 0
-	},
-	{
-		title: "HR",
-		className: "hr",
-		janela: 1
-	},
-	{
-		title: "ER",
-		className: "er",
-		janela: 2
-	},
-	{
-		title: "CC",
-		className: "cc",
-		janela: 3
-	},
-]
+const JANELAS = DEFAULT_HOTSPOTS.map(({ title, className, janela }) => ({
+	title,
+	className,
+	janela,
+}));
 
 const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
@@ -45,7 +32,6 @@ class PaginaQuiz extends React.Component {
 		this.state = {
 			selectedAnimal: 0,
 			selectedArea: -1,
-			perfil: doguinio,
 			tempo: 180,
 			tempoOriginal: 180,
 			timer: null,
@@ -302,11 +288,19 @@ class PaginaQuiz extends React.Component {
 					<div className="col-6 lado-direito">
 
 						<div className="imagem-container">
-							<img src={doguinio} alt="Imagem" style={{height: '85vh'}} />
-							{JANELAS.map((item) =>
+							<img
+								src={resolverImagemBaseUrl(animal?.imagemBase, this.cacheBust)}
+								alt="Imagem"
+							/>
+							{parseHotspotsConfig(animal?.hotspotsConfig).map((item) =>
 								<div
 									key={item.className}
 									className={item.className}
+									style={{
+										top: `${item.top}%`,
+										left: `${item.left}%`,
+										width: `${item.size}%`,
+									}}
 									onMouseLeave={() => this.setState({ selectedArea: -1, janelaAberta: false })}
 									onClick={() => {
 										if(!this.state.janelaAberta || this.state.selectedArea !== item.janela) {

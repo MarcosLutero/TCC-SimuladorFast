@@ -34,3 +34,27 @@ export function atualizarImagemAnimalReq(idAnimal, idImagem, body) {
 export function deletarImagemAnimalReq(idAnimal, idImagem) {
     return Api.request("DELETE", `animal/${idAnimal}/imagens/${idImagem}`, {})
 }
+
+export function uploadImagemBaseAnimalReq(idAnimal, file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return Api.request("POST", `animal/${idAnimal}/imagem-base`, {
+        body: formData,
+        stringfyBody: false,
+        contentType: "",
+    });
+}
+
+export function removerImagemBaseAnimalReq(idAnimal) {
+    return Api.request("DELETE", `animal/${idAnimal}/imagem-base`, {});
+}
+
+export function atualizarHotspotsAnimalReq(idAnimal, hotspotsConfig) {
+    return Api.request("PUT", `animal/${idAnimal}/hotspots`, {
+        body: { hotspotsConfig },
+    });
+}
+
+export function copiarLayoutAnimalReq(idAnimal, origemId) {
+    return Api.request("POST", `animal/${idAnimal}/copiar-layout/${origemId}`, {});
+}

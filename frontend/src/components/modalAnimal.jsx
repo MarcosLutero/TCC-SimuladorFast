@@ -1,6 +1,7 @@
 import React from 'react'
-import { Badge, Button, Card, Col, Form, Modal, Row, Table } from 'react-bootstrap'
+import { Badge, Button, Card, Col, Form, Modal, Nav, Row, Table } from 'react-bootstrap'
 import { atualizarAnimalReq, atualizarImagemAnimalReq, cadastrarAnimalReq, cadastrarImagemAnimalReq, deletarImagemAnimalReq, listarImagensAnimalReq } from '../api/animal';
+import HotspotEditor from './HotspotEditor';
 
 const API_URL = process.env.REACT_APP_API_URL
 const CAMINHO_ARQUIVOS = `${API_URL}/ws/images/`;
@@ -12,13 +13,19 @@ const TIPO_JANELAS = ["HD", "HR", "ER", "CC"]
 export default function ModalAnimal(props) {
 
     const [openModalAnimal, setOpenModalAnimal] = React.useState(false)
+    const [abaModal, setAbaModal] = React.useState("geral")
     const [openModalImagem, setOpenModalImagem] = React.useState(false)
     const [abrirModalConfirmar, setAbrirModalConfirmar] = React.useState(false)
     const [animalData, setAnimalData] = React.useState(DEFAULT_ANIMAL_DATA)
+    const [animalEditState, setAnimalEditState] = React.useState(props.animal || null)
     const [imagemData, setImagemData] = React.useState(DEFAULT_IMAGEM_DATA)
     const [imagens, setImagens] = React.useState([])
     const [imgSelected, setImgSelected] = React.useState({})
     const [imgEdit, setImgEdit] = React.useState(false)
+
+    React.useEffect(() => {
+        setAnimalEditState(props.animal || null)
+    }, [props.animal])
 
     function getImagens(idAnimal) {
         listarImagensAnimalReq(idAnimal)
@@ -42,11 +49,13 @@ export default function ModalAnimal(props) {
 
     function onOpenModalAnimal() {
         let temp = DEFAULT_ANIMAL_DATA
+        setAbaModal("geral")
         if (props.edit) {
             temp = {
                 tipo: props.animal.tipo,
                 isActive: props.animal.isActive
             }
+            setAnimalEditState(props.animal)
             getImagens(props.animal.id)
         }
         setAnimalData(temp)
@@ -177,14 +186,37 @@ export default function ModalAnimal(props) {
             )}
 
             {/* Modal Animal */}
-            <Modal show={openModalAnimal} onHide={() => setOpenModalAnimal(false)} size={props.edit ? "lg" : undefined} centered>
+            <Modal
+                show={openModalAnimal}
+                onHide={() => setOpenModalAnimal(false)}
+                size={props.edit ? (abaModal === "hotspots" ? "xl" : "lg") : undefined}
+                centered
+            >
                 <Modal.Header closeButton>
                     <h5 className="mb-0 fw-semibold">
                         {action} Animal {props.edit ? `#${props.animal.id}` : ""}
                     </h5>
                 </Modal.Header>
                 <Modal.Body>
-                    <Row className="g-3 align-items-end">
+                    {props.edit && (
+                        <Nav
+                            variant="tabs"
+                            activeKey={abaModal}
+                            onSelect={(k) => setAbaModal(k || "geral")}
+                            className="mb-3"
+                        >
+                            <Nav.Item>
+                                <Nav.Link eventKey="geral">Dados &amp; Imagens A-FAST</Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Nav.Link eventKey="hotspots">Imagem do Quiz &amp; Hotspots</Nav.Link>
+                            </Nav.Item>
+                        </Nav>
+                    )}
+
+                    {(!props.edit || abaModal === "geral") && (
+                        <>
+                            <Row className="g-3 align-items-end">
                         <Col xs={12} sm={6}>
                             <Form.Label className="mb-1 small">Espécie de animal</Form.Label>
                             <Form.Control
@@ -306,6 +338,21 @@ export default function ModalAnimal(props) {
                                 )}
                             </Card.Body>
                         </Card>
+                    )}
+                        </>
+                    )}
+
+                    {props.edit && abaModal === "hotspots" && (
+                        <HotspotEditor
+                            animal={animalEditState || props.animal}
+                            outrosAnimais={props.animais || []}
+                            onUpdated={(atualizado) => {
+                                if (atualizado) {
+                                    setAnimalEditState((prev) => ({ ...(prev || {}), ...atualizado }))
+                                }
+                                if (props.onCreateEdit) props.onCreateEdit()
+                            }}
+                        />
                     )}
                 </Modal.Body>
             </Modal>
