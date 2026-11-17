@@ -3,14 +3,20 @@ import { Button, Modal } from "react-bootstrap"
 
 export default function CustomFeedbackModal(props) {
     const [show, setShow] = React.useState(false)
+    const feeds = Array.isArray(props.feeds) ? props.feeds : []
     return <div>
-        <Button size="sm" onClick={() => {
+        <Button size="sm" variant="outline-primary" style={{ fontFamily: "inherit" }} onClick={() => {
             setShow(true)
-        }}>Ver Feedbacks</Button>
-        <Modal show={show} size="lg">
-            <Modal.Header><h3>Feedback</h3></Modal.Header>
+        }}>Ver Feedback</Button>
+        <Modal show={show} size="lg" onHide={() => {
+            if (props.onClose) props.onClose()
+            setShow(false)
+        }}>
+            <Modal.Header closeButton><h4 className="mb-0">Detalhes do Feedback</h4></Modal.Header>
             <Modal.Body>
-                {props.feeds.map((feed, _) => {
+                {feeds.length === 0 ? (
+                    <p className="text-center text-muted mb-0">Nenhum detalhe disponível para este feedback.</p>
+                ) : feeds.map((feed, _) => {
                     return (
                         <div className="mb-2" key={`feed_itens_${_}`}>
                             <table className="table table-striped">
@@ -56,11 +62,11 @@ export default function CustomFeedbackModal(props) {
 
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="danger" size='sm' onClick={() => {
+                <Button variant="secondary" size='sm' style={{ fontFamily: "inherit" }} onClick={() => {
                     if (props.onClose) props.onClose()
                     setShow(false)
                 }} >
-                    Voltar
+                    Fechar
                 </Button>
             </Modal.Footer>
         </Modal>

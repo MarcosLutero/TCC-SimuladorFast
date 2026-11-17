@@ -166,8 +166,10 @@ export default function ModalAnimal(props) {
             <Button
                 onClick={onOpenModalAnimal}
                 size='sm'
+                variant={props.variant || 'primary'}
+                style={{ fontFamily: 'inherit' }}
             >
-                {action}
+                {props.buttonLabel || action}
             </Button>
         }
         <Modal show={openModalAnimal} onHide={() => setOpenModalAnimal(false)}>
