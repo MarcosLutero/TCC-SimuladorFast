@@ -83,8 +83,16 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
     }));
     const porAnimalMap = new Map();
     const diariaMap = new Map();
+    const uniquePairMap = new Map();
 
-    (feedbacks || []).forEach((f) => {
+    const ordenados = (feedbacks || []).slice().sort((a, b) => {
+        const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
+        if (ta !== tb) return ta - tb;
+        return Number(a?.id || 0) - Number(b?.id || 0);
+    });
+
+    ordenados.forEach((f) => {
         const nomeUsuario = f.usuario || "Desconhecido";
         if (usuarioFiltro && String(usuarioFiltro) !== String(nomeUsuario)) return;
 
@@ -240,8 +248,88 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
             if (totalNoAnimal > 0 && acertosNoAnimal === totalNoAnimal) {
                 animaisPerfeitos += 1;
             }
+
+            const pairKey = `${nomeUsuario}::${idAnim}`;
+            if (!uniquePairMap.has(pairKey)) {
+                const aObj = animaisMap.get(idAnim);
+                uniquePairMap.set(pairKey, {
+                    usuarioId: nomeUsuario,
+                    usuarioNome: nomeUsuario,
+                    animalId: idAnim,
+                    especie: aObj?.tipo || `Removido #${idAnim}`,
+                    tentativas: 0,
+                    acertosPrimeira: 0,
+                    janelasPrimeira: 0,
+                    tempoPrimeiraSegundos: 0,
+                    tempoPrimeiraValido: -1,
+                    dataPrimeira: null,
+                    acertosUltima: 0,
+                    janelasUltima: 0,
+                    tempoUltimaSegundos: 0,
+                    dataUltima: null,
+                    melhorTaxaPercent: 0,
+                });
+            }
+            const up = uniquePairMap.get(pairKey);
+            const taxaAtual = pct(acertosNoAnimal, totalNoAnimal);
+            const tValido = Number.isFinite(tAnim) && tAnim >= 0 ? Math.round(tAnim * 10) / 10 : 0;
+            if (up.tentativas === 0) {
+                up.acertosPrimeira = acertosNoAnimal;
+                up.janelasPrimeira = totalNoAnimal;
+                up.tempoPrimeiraSegundos = tValido;
+                up.tempoPrimeiraValido = Number.isFinite(tAnim) && tAnim >= 0 ? tAnim : -1;
+                up.dataPrimeira = f.createdAt || null;
+                up.melhorTaxaPercent = taxaAtual;
+            } else if (taxaAtual > up.melhorTaxaPercent) {
+                up.melhorTaxaPercent = taxaAtual;
+            }
+            up.acertosUltima = acertosNoAnimal;
+            up.janelasUltima = totalNoAnimal;
+            up.tempoUltimaSegundos = tValido;
+            up.dataUltima = f.createdAt || null;
+            up.tentativas += 1;
         });
     });
+
+    let acertosPrimeiraTotal = 0;
+    let janelasPrimeiraTotal = 0;
+    let acertosUltimaTotal = 0;
+    let janelasUltimaTotal = 0;
+    let somaTempoPrimeira = 0;
+    let countTempoPrimeira = 0;
+    const porAnimalUnico = Array.from(uniquePairMap.values())
+        .map((up) => {
+            acertosPrimeiraTotal += up.acertosPrimeira;
+            janelasPrimeiraTotal += up.janelasPrimeira;
+            acertosUltimaTotal += up.acertosUltima;
+            janelasUltimaTotal += up.janelasUltima;
+            if (up.tempoPrimeiraValido >= 0) {
+                somaTempoPrimeira += up.tempoPrimeiraValido;
+                countTempoPrimeira += 1;
+            }
+            const taxaPrimeira = pct(up.acertosPrimeira, up.janelasPrimeira);
+            const taxaUltima = pct(up.acertosUltima, up.janelasUltima);
+            return {
+                usuarioId: up.usuarioId,
+                usuarioNome: up.usuarioNome,
+                animalId: up.animalId,
+                especie: up.especie,
+                tentativas: up.tentativas,
+                acertosPrimeira: up.acertosPrimeira,
+                janelasPrimeira: up.janelasPrimeira,
+                taxaPrimeiraPercent: taxaPrimeira,
+                tempoPrimeiraSegundos: up.tempoPrimeiraSegundos,
+                dataPrimeira: up.dataPrimeira,
+                acertosUltima: up.acertosUltima,
+                janelasUltima: up.janelasUltima,
+                taxaUltimaPercent: taxaUltima,
+                tempoUltimaSegundos: up.tempoUltimaSegundos,
+                dataUltima: up.dataUltima,
+                melhorTaxaPercent: up.melhorTaxaPercent,
+                ganhoPercent: Math.round((taxaUltima - taxaPrimeira) * 10) / 10,
+            };
+        })
+        .sort((a, b) => a.usuarioNome.localeCompare(b.usuarioNome) || a.animalId - b.animalId);
 
     const ativosCount = (animais || []).filter((a) => Boolean(a.isActive)).length;
 
@@ -260,6 +348,10 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
             tempoMedioPorAnimalSegundos: avg(somaTempoAnimal, countTempoAnimal),
             totalAnimaisCadastrados: (animais || []).length,
             totalAnimaisAtivos: ativosCount,
+            totalParesUnicos: porAnimalUnico.length,
+            taxaAcertoPrimeiraTentativaPercent: pct(acertosPrimeiraTotal, janelasPrimeiraTotal),
+            taxaAcertoUltimaTentativaPercent: pct(acertosUltimaTotal, janelasUltimaTotal),
+            tempoMedioPrimeiraTentativaSegundos: avg(somaTempoPrimeira, countTempoPrimeira),
         },
         porUsuario: Array.from(porUsuarioMap.values())
             .map((u) => ({
@@ -315,6 +407,7 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
                 taxaAcertoPercent: pct(d.acertos, d.janelasAvaliadas),
                 tempoMedioSessaoSegundos: avg(d.somaTempoSessao, d.countTempoSessao),
             })),
+        porAnimalUnico,
         filtros: {
             usuarios: Array.from(usuariosFiltroMap.values()),
             animais: (animais || [])

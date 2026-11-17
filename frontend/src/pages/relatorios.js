@@ -158,6 +158,43 @@ export default function RelatoriosPage() {
     );
   };
 
+  const exportarPorAnimalUnico = () => {
+    if (!dados) return;
+    baixarCsv(
+      "relatorio-animal-unico-primeira-tentativa.csv",
+      [
+        "Aluno",
+        "ID Animal",
+        "Espécie",
+        "Tentativas",
+        "1ª Tentativa Acertos",
+        "1ª Tentativa Janelas",
+        "1ª Tentativa (%)",
+        "Tempo 1ª (s)",
+        "Data 1ª Tentativa",
+        "Última Tentativa (%)",
+        "Tempo Última (s)",
+        "Melhor Taxa (%)",
+        "Evolução (p.p.)",
+      ],
+      (dados.porAnimalUnico || []).map((p) => [
+        p.usuarioNome,
+        p.animalId,
+        p.especie,
+        p.tentativas,
+        p.acertosPrimeira,
+        p.janelasPrimeira,
+        p.taxaPrimeiraPercent,
+        p.tempoPrimeiraSegundos,
+        p.dataPrimeira ? new Date(p.dataPrimeira).toLocaleString("pt-BR") : "",
+        p.taxaUltimaPercent,
+        p.tempoUltimaSegundos,
+        p.melhorTaxaPercent,
+        p.ganhoPercent,
+      ])
+    );
+  };
+
   const resumo = dados?.resumo;
   const mostrarTodos = aba === "todos";
 
@@ -302,6 +339,50 @@ export default function RelatoriosPage() {
               </Col>
             </Row>
 
+            {/* Destaque 1ª Tentativa (sem repetição) */}
+            <Row className="g-3 mb-4">
+              <Col xs={12} md={4}>
+                <Card className="h-100 shadow-sm border-primary">
+                  <Card.Body className="py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                      <div className="text-muted small">Pares Únicos (Aluno × Animal)</div>
+                      <h4 className="mb-0">{resumo.totalParesUnicos ?? 0}</h4>
+                    </div>
+                    <Badge bg="primary">1ª vez por caso</Badge>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col xs={12} md={4}>
+                <Card className="h-100 shadow-sm border-info">
+                  <Card.Body className="py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                      <div className="text-muted small">Acerto na 1ª Tentativa (Sem Repetição)</div>
+                      <h4 className={`mb-0 text-${corBarra(resumo.taxaAcertoPrimeiraTentativaPercent ?? 0)}`}>
+                        {resumo.taxaAcertoPrimeiraTentativaPercent ?? 0}%
+                      </h4>
+                    </div>
+                    <small className="text-muted">Tempo: {formatarSegundos(resumo.tempoMedioPrimeiraTentativaSegundos ?? 0)}</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col xs={12} md={4}>
+                <Card className="h-100 shadow-sm border-success">
+                  <Card.Body className="py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                      <div className="text-muted small">Acerto na Última Tentativa</div>
+                      <h4 className={`mb-0 text-${corBarra(resumo.taxaAcertoUltimaTentativaPercent ?? 0)}`}>
+                        {resumo.taxaAcertoUltimaTentativaPercent ?? 0}%
+                      </h4>
+                    </div>
+                    <Badge bg={(resumo.taxaAcertoUltimaTentativaPercent ?? 0) >= (resumo.taxaAcertoPrimeiraTentativaPercent ?? 0) ? "success" : "danger"}>
+                      {((resumo.taxaAcertoUltimaTentativaPercent ?? 0) - (resumo.taxaAcertoPrimeiraTentativaPercent ?? 0)) >= 0 ? "+" : ""}
+                      {Math.round(((resumo.taxaAcertoUltimaTentativaPercent ?? 0) - (resumo.taxaAcertoPrimeiraTentativaPercent ?? 0)) * 10) / 10} p.p.
+                    </Badge>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
             {/* Navegação entre relatórios */}
             <Nav variant="tabs" activeKey={aba} onSelect={(k) => setAba(k || "todos")} className="mb-3 no-print">
               <Nav.Item>
@@ -315,6 +396,9 @@ export default function RelatoriosPage() {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="animais">Por Animal</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="unicos">Por Animal Único (1ª vs Última)</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="evolucao">Evolução Diária</Nav.Link>
@@ -477,11 +561,82 @@ export default function RelatoriosPage() {
               </Card>
             )}
 
-            {/* Relatório 4: Evolução Diária */}
+            {/* Relatório 4: Por Animal Único (1ª vs Última tentativa por Aluno × Animal) */}
+            {(mostrarTodos || aba === "unicos") && (
+              <Card className="mb-4 shadow-sm">
+                <Card.Header className="d-flex justify-content-between align-items-center bg-white">
+                  <div>
+                    <strong>4. Desempenho por Animal Único (1ª Tentativa vs Última por Aluno)</strong>
+                    <div className="small text-muted">
+                      Mede a acurácia inicial antes da repetição e a evolução do aluno ao rever o mesmo animal
+                    </div>
+                  </div>
+                  <Button variant="outline-success" size="sm" className="no-print" style={{ fontFamily: "inherit" }} onClick={exportarPorAnimalUnico}>
+                    <i className="bi bi-download me-1" /> CSV
+                  </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  {(dados.porAnimalUnico || []).length === 0 ? (
+                    <p className="text-center text-muted py-4 mb-0">Nenhum par aluno × animal encontrado para este filtro.</p>
+                  ) : (
+                    <Table responsive striped hover className="mb-0 align-middle">
+                      <thead>
+                        <tr>
+                          <th>Aluno</th>
+                          <th>Animal</th>
+                          <th className="text-center">Tentativas</th>
+                          <th style={{ minWidth: "170px" }}>1ª Tentativa</th>
+                          <th className="text-center">Tempo 1ª</th>
+                          <th style={{ minWidth: "150px" }}>Última Tentativa</th>
+                          <th className="text-center">Melhor</th>
+                          <th className="text-center">Evolução</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(dados.porAnimalUnico || []).map((p) => (
+                          <tr key={`${p.usuarioId}-${p.animalId}`}>
+                            <td className="fw-semibold">{p.usuarioNome}</td>
+                            <td><strong>#{p.animalId}</strong> — {p.especie}</td>
+                            <td className="text-center">
+                              <Badge bg={p.tentativas > 1 ? "info" : "secondary"}>{p.tentativas}x</Badge>
+                            </td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <ProgressBar now={p.taxaPrimeiraPercent} variant={corBarra(p.taxaPrimeiraPercent)} style={{ flex: 1, height: "10px" }} />
+                                <small className="fw-bold">{p.acertosPrimeira}/{p.janelasPrimeira} ({p.taxaPrimeiraPercent}%)</small>
+                              </div>
+                              {p.dataPrimeira && (
+                                <small className="text-muted">{new Date(p.dataPrimeira).toLocaleString("pt-BR")}</small>
+                              )}
+                            </td>
+                            <td className="text-center">{formatarSegundos(p.tempoPrimeiraSegundos)}</td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <ProgressBar now={p.taxaUltimaPercent} variant={corBarra(p.taxaUltimaPercent)} style={{ flex: 1, height: "10px" }} />
+                                <small className="fw-bold">{p.taxaUltimaPercent}%</small>
+                              </div>
+                              <small className="text-muted">Tempo: {formatarSegundos(p.tempoUltimaSegundos)}</small>
+                            </td>
+                            <td className="text-center fw-bold">{p.melhorTaxaPercent}%</td>
+                            <td className="text-center">
+                              <Badge bg={p.ganhoPercent > 0 ? "success" : p.ganhoPercent < 0 ? "danger" : "secondary"}>
+                                {p.ganhoPercent > 0 ? "+" : ""}{p.ganhoPercent} p.p.
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
+                </Card.Body>
+              </Card>
+            )}
+
+            {/* Relatório 5: Evolução Diária */}
             {(mostrarTodos || aba === "evolucao") && (
               <Card className="mb-4 shadow-sm">
                 <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-                  <strong>4. Evolução Diária de Uso e Acertos</strong>
+                  <strong>5. Evolução Diária de Uso e Acertos</strong>
                   <Button variant="outline-success" size="sm" className="no-print" style={{ fontFamily: "inherit" }} onClick={exportarEvolucao}>
                     <i className="bi bi-download me-1" /> CSV
                   </Button>
