@@ -5,6 +5,7 @@ import FeedbackPage from './feedbacks'
 import UsuariosPage from './adminUsuarios'
 import Login from "./login"
 import Cadastro from "./cadastro"
+import RelatoriosPage from "./relatorios"
 
 export {
     PaginaInicial,
@@ -13,5 +14,6 @@ export {
     FeedbackPage,
     UsuariosPage,
     Login,
-    Cadastro
+    Cadastro,
+    RelatoriosPage
 }

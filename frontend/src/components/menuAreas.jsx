@@ -5,6 +5,7 @@ const TELAS = [
     { name: "Inicio", path: "/", nivel: 1 },
     { name: "Animais", path: "/animais", nivel: 2 },
     { name: "Feedbacks", path: "/feedbacks", nivel: 2 },
+    { name: "Relatórios", path: "/relatorios", nivel: 2 },
     { name: "Usuarios", path: "/admin/usuarios", nivel: 3 },
 ]
 

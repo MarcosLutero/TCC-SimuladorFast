@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { PaginaInicial, Quiz, AdminAnimais, Login, FeedbackPage, UsuariosPage, Cadastro } from "./pages";
+import { PaginaInicial, Quiz, AdminAnimais, Login, FeedbackPage, UsuariosPage, Cadastro, RelatoriosPage } from "./pages";
 
 function PrivateRoute({ element: Component, level }) {
   const [nivelAcesso, setNivelAcesso] = useState(null);
@@ -41,6 +41,7 @@ export default function App(props) {
         <Route path="/" element={<PrivateRoute element={PaginaInicial} level={1} />} />
         <Route path="/quiz" element={<PrivateRoute element={Quiz} level={1} />} />
         <Route path="/feedbacks" element={<PrivateRoute element={FeedbackPage} level={2} />} />
+        <Route path="/relatorios" element={<PrivateRoute element={RelatoriosPage} level={2} />} />
         <Route path="/animais" element={<PrivateRoute element={AdminAnimais} level={2} />} />
         <Route path="/admin/usuarios" element={<PrivateRoute element={UsuariosPage} level={3} />} />
       </Routes>
