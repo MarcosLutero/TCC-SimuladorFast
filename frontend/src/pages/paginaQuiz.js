@@ -60,6 +60,7 @@ class PaginaQuiz extends React.Component {
 	timerId = null;
 	feedbackEnviadoRef = false;
 	cacheBust = Date.now();
+	isMounted = false;
 
 	pararTimer() {
 		if (this.timerId) {
@@ -68,6 +69,16 @@ class PaginaQuiz extends React.Component {
 		}
 		if (this.state.timer) {
 			clearInterval(this.state.timer);
+		}
+	}
+
+	lerAnimaisVistos() {
+		try {
+			const raw = window.sessionStorage.getItem("animaisVistos");
+			const parsed = raw ? JSON.parse(raw) : [];
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
 		}
 	}
 
@@ -85,8 +96,18 @@ class PaginaQuiz extends React.Component {
 
 		this.setState({ tempo: config.tempo, tempoOriginal: config.tempo })
 
-		sortearAnimaisReq(config.qtd)
-		.then((animais) => {
+		const vistos = this.lerAnimaisVistos();
+		sortearAnimaisReq(config.qtd, vistos)
+		.then((animaisResp) => {
+			if (!this.isMounted) return;
+			const lista = Array.isArray(animaisResp) ? animaisResp : [];
+			const animais = lista.filter((a, idx, arr) => arr.findIndex((x) => x.id === a.id) === idx);
+			const novosIds = animais.map((a) => a.id).filter((id) => id != null);
+			const houveReinicializacao = novosIds.some((id) => vistos.includes(id));
+			const proximosVistos = houveReinicializacao
+				? novosIds
+				: [...new Set([...vistos, ...novosIds])];
+			window.sessionStorage.setItem("animaisVistos", JSON.stringify(proximosVistos));
 			this.setState({ animais });
 		})
 		.catch((err) => {
@@ -95,6 +116,7 @@ class PaginaQuiz extends React.Component {
 	}
 
 	componentDidMount() {
+		this.isMounted = true;
 		this.getAnimais();
 		this.pararTimer();
 		this.timerId = setInterval(() => {
@@ -108,6 +130,7 @@ class PaginaQuiz extends React.Component {
 	}
 
 	componentWillUnmount() {
+		this.isMounted = false;
 		this.pararTimer();
 	}
 

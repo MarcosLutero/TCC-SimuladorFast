@@ -1,7 +1,10 @@
 import { Api } from "."
 
-export function sortearAnimaisReq(qtd) {
-    return Api.request("GET", `sortear-animais/${qtd}`, {})
+export function sortearAnimaisReq(qtd, excludeIds = []) {
+    const params = Array.isArray(excludeIds) && excludeIds.length > 0
+        ? { excludeIds: excludeIds.join(",") }
+        : {};
+    return Api.request("GET", `sortear-animais/${qtd}`, { params });
 }
 
 
