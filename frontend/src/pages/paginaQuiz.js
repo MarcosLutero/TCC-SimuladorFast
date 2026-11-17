@@ -18,18 +18,18 @@ const JANELAS = [
 		janela: 0
 	},
 	{
+		title: "HR",
+		className: "hr",
+		janela: 1
+	},
+	{
 		title: "ER",
 		className: "er",
-		janela: 1
+		janela: 2
 	},
 	{
 		title: "CC",
 		className: "cc",
-		janela: 2
-	},
-	{
-		title: "HR",
-		className: "hr",
 		janela: 3
 	},
 ]
@@ -153,9 +153,10 @@ class PaginaQuiz extends React.Component {
 			
 			let escore = 0
 			let escoreCorreto = animal.pontuacao
-			const janelasData = [0,1,2,3].map(_ => {
-				let {temLiquido, clicked} = animal.imgs[_]
-				let janela = JANELAS[_]
+			const janelasData = JANELAS.map((janelaInfo, idx) => {
+				const img = (animal.imgs || []).find((item) => item.janela === janelaInfo.janela) || (animal.imgs || [])[idx]
+				let { temLiquido, clicked } = img || {}
+				let janela = janelaInfo
 
 				let resposta = ""
 				const respostaCorreta = temLiquido? "Tem líquido": "Não tem líquido" 
@@ -226,7 +227,7 @@ class PaginaQuiz extends React.Component {
 									tempAnimais[selectedAnimal].tempo = this.state.tempoOriginal - tempo
 									selectedAnimal += 1
 									
-									this.setState({ selectedAnimal, animais: tempAnimais, tempo: this.state.tempoOriginal })
+									this.setState({ selectedAnimal, animais: tempAnimais, tempo: this.state.tempoOriginal, selectedArea: -1, janelaAberta: false })
 								}}
 							>
 								Proximo
@@ -252,8 +253,8 @@ class PaginaQuiz extends React.Component {
 				<div className="div-geral">
 					<div className="col-6 d-flex justify-content-around lado-esquerdo">
 						{
-							animal && this.state.selectedArea !== -1 ?
-								<div class="text-light d-column text-center" style={{ top: 10 }}>
+							animal && this.state.selectedArea !== -1 && animal.imgs[selectedArea] ?
+								<div className="text-light d-column text-center" style={{ top: 10 }}>
 									<label >
 										<strong>
 											Tem liquido? {animal.imgs[selectedArea].clicked === undefined ? "(Clique na area para responder)" : !animal.imgs[selectedArea].clicked ? "Não" : "Sim"}
@@ -261,6 +262,7 @@ class PaginaQuiz extends React.Component {
 									</label>
 									<br />
 									<Image
+										key={animal.imgs[selectedArea].caminho}
 										alt="imagem"
 										className="m-0 p-0 imagem-direita"
 										style={{
@@ -275,14 +277,15 @@ class PaginaQuiz extends React.Component {
 					</div>
 					<div className="col-6 lado-direito">
 
-						<div class="imagem-container">
+						<div className="imagem-container">
 							<img src={doguinio} alt="Imagem" style={{height: '85vh'}} />
-							{JANELAS.map((item, _) =>
+							{JANELAS.map((item) =>
 								<div
+									key={item.className}
 									className={item.className}
 									onMouseLeave={() => this.setState({ selectedArea: -1, janelaAberta: false })}
 									onClick={() => {
-										if(!this.state.janelaAberta) {
+										if(!this.state.janelaAberta || this.state.selectedArea !== item.janela) {
 											this.setState({ selectedArea: item.janela, janelaAberta: true })
 											return
 										}

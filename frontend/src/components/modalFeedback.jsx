@@ -8,18 +8,18 @@ const JANELAS = [
 		janela: 0
 	},
 	{
+		title: "HR",
+		className: "hr",
+		janela: 1
+	},
+	{
 		title: "ER",
 		className: "er",
-		janela: 1
+		janela: 2
 	},
 	{
 		title: "CC",
 		className: "cc",
-		janela: 2
-	},
-	{
-		title: "HR",
-		className: "hr",
 		janela: 3
 	},
 ]
@@ -40,6 +40,7 @@ export default function ModalFeedback(props) {
                         </thead>
                         <tbody>
                             {[0, 1, 2, 3].map(i => {
+                                if (!a.imgs || !a.imgs[i]) return null;
                                 let resposta = ''
                                 let check = false
                                 let {clicked, temLiquido} = a.imgs[i]
