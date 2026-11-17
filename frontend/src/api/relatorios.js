@@ -1,6 +1,7 @@
 import { Api } from ".";
 import { listarAnimaisReq } from "./animal";
 import { listarFeedbacksReq } from "./feedback";
+import { listarUsuariosReq } from "./usuarios";
 
 const JANELAS_META = [
     { janela: 0, sigla: "HD", nome: "Hepato-Diafragmática" },
@@ -44,14 +45,55 @@ function toLocalDateStr(dateInput) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-function agregarRelatoriosLocal(feedbacks, animais, filtros) {
+function obterUsuarioNaoAlunoLogado() {
+    try {
+        const nivel = Number(sessionStorage.getItem("nivelAcesso") || 0);
+        if (nivel > 1) {
+            const raw = sessionStorage.getItem("usuario");
+            const parsed = raw ? JSON.parse(raw) : null;
+            return parsed?.nome || null;
+        }
+    } catch {
+        // Ignora erro de acesso ao sessionStorage
+    }
+    return null;
+}
+
+function agregarRelatoriosLocal(feedbacks, animais, filtros, usuarios) {
     const animaisMap = new Map();
     (animais || []).forEach((a) => animaisMap.set(a.id, a));
 
+    const usuariosPorNome = new Map();
+    if (Array.isArray(usuarios)) {
+        usuarios.forEach((u) => {
+            if (!u?.nome) return;
+            const prev = usuariosPorNome.get(u.nome) || { roles: new Set(), email: "" };
+            if (u.role) prev.roles.add(u.role);
+            if (u.role === "ROLE_USER" && u.email && !prev.email) {
+                prev.email = u.email;
+            }
+            usuariosPorNome.set(u.nome, prev);
+        });
+    }
+    const nomeLogadoNaoAluno = Array.isArray(usuarios) ? null : obterUsuarioNaoAlunoLogado();
+
+    const isAlunoFeedback = (nomeUsuario) => {
+        if (!nomeUsuario) return false;
+        const meta = usuariosPorNome.get(nomeUsuario);
+        if (meta) {
+            return meta.roles.has("ROLE_USER");
+        }
+        if (nomeLogadoNaoAluno && nomeUsuario === nomeLogadoNaoAluno) {
+            return false;
+        }
+        return true;
+    };
+
     const usuariosFiltroMap = new Map();
     (feedbacks || []).forEach((f) => {
-        if (f.usuario && !usuariosFiltroMap.has(f.usuario)) {
-            usuariosFiltroMap.set(f.usuario, { id: f.usuario, nome: f.usuario, email: "" });
+        if (isAlunoFeedback(f.usuario) && !usuariosFiltroMap.has(f.usuario)) {
+            const meta = usuariosPorNome.get(f.usuario);
+            usuariosFiltroMap.set(f.usuario, { id: f.usuario, nome: f.usuario, email: meta?.email || "" });
         }
     });
 
@@ -93,7 +135,8 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
     });
 
     ordenados.forEach((f) => {
-        const nomeUsuario = f.usuario || "Desconhecido";
+        if (!isAlunoFeedback(f.usuario)) return;
+        const nomeUsuario = f.usuario;
         if (usuarioFiltro && String(usuarioFiltro) !== String(nomeUsuario)) return;
 
         const dataStr = toLocalDateStr(f.createdAt);
@@ -121,11 +164,12 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
         }
 
         if (!porUsuarioMap.has(nomeUsuario)) {
+            const meta = usuariosPorNome.get(nomeUsuario);
             porUsuarioMap.set(nomeUsuario, {
                 usuarioId: nomeUsuario,
                 nome: nomeUsuario,
-                email: "",
-                role: "",
+                email: meta?.email || "",
+                role: meta?.roles.has("ROLE_USER") ? "ROLE_USER" : "",
                 totalSessoes: 0,
                 animaisAvaliados: 0,
                 janelasAvaliadas: 0,
@@ -409,7 +453,7 @@ function agregarRelatoriosLocal(feedbacks, animais, filtros) {
             })),
         porAnimalUnico,
         filtros: {
-            usuarios: Array.from(usuariosFiltroMap.values()),
+            usuarios: Array.from(usuariosFiltroMap.values()).sort((a, b) => a.nome.localeCompare(b.nome)),
             animais: (animais || [])
                 .slice()
                 .sort((a, b) => a.id - b.id)
@@ -429,11 +473,12 @@ export async function obterRelatoriosReq(filtros = {}) {
         return await Api.request("GET", "relatorios", { params });
     } catch (err) {
         if (err && (err.status === 404 || err.status === 403 || !err.status)) {
-            const [feedbacks, animais] = await Promise.all([
+            const [feedbacks, animais, usuarios] = await Promise.all([
                 listarFeedbacksReq(),
                 listarAnimaisReq(),
+                listarUsuariosReq().catch(() => null),
             ]);
-            return agregarRelatoriosLocal(feedbacks, animais, filtros);
+            return agregarRelatoriosLocal(feedbacks, animais, filtros, usuarios);
         }
         throw err;
     }

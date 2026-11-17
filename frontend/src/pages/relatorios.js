@@ -215,7 +215,7 @@ export default function RelatoriosPage() {
           <div>
             <h3 className="mb-0">Relatórios do Simulador A-FAST</h3>
             <small className="text-muted">
-              Desempenho por aluno, acurácia por janela anatômica, casos clínicos e evolução diária
+              Desempenho exclusivo de alunos (médicos e administradores ignorados), acurácia por janela, casos clínicos e evolução diária
             </small>
           </div>
           <div className="d-flex gap-2 no-print">
@@ -239,9 +239,9 @@ export default function RelatoriosPage() {
                   <Form.Control type="date" size="sm" value={fim} onChange={(e) => setFim(e.target.value)} />
                 </Col>
                 <Col xs={12} sm={6} md={3}>
-                  <Form.Label className="mb-1 small">Aluno / Usuário</Form.Label>
+                  <Form.Label className="mb-1 small">Aluno</Form.Label>
                   <Form.Select size="sm" value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-                    <option value="">Todos os usuários</option>
+                    <option value="">Todos os alunos</option>
                     {(dados?.filtros?.usuarios || []).map((u) => (
                       <option key={u.id} value={u.id}>
                         {u.nome}{u.email ? ` (${u.email})` : ""}
@@ -295,7 +295,7 @@ export default function RelatoriosPage() {
               <Col xs={6} md={4} lg={2}>
                 <Card className="h-100 shadow-sm text-center">
                   <Card.Body className="py-3">
-                    <div className="text-muted small">Participantes</div>
+                    <div className="text-muted small">Alunos</div>
                     <h3 className="mb-0">{resumo.totalUsuariosAtivosNoPeriodo}</h3>
                   </Card.Body>
                 </Card>
