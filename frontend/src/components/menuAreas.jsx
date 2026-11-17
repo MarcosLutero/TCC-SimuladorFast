@@ -10,7 +10,6 @@ const TELAS = [
 
 export default function MenuAreas(props) {
     const nivelAcesso = parseInt(sessionStorage.getItem('nivelAcesso'))
-    const usuario = JSON.parse(sessionStorage.getItem('usuario'))
 
     const telaInicial = window.location.pathname === "/"
     return <nav className={`navbar navbar-expand-lg ${telaInicial? "navbar-dark": 'navbar-light'}`}>

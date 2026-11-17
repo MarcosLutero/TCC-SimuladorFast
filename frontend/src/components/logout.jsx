@@ -2,17 +2,17 @@ import React from 'react'
 
 const Logout = (props) => {
    return <li className='nav-item'>
-      <a
-         className='nav-link'
-         href='#'
-         onClick={e => {
-            e.preventDefault()
+      <button
+         type='button'
+         className='nav-link btn btn-link'
+         style={{ fontFamily: 'inherit' }}
+         onClick={() => {
             sessionStorage.clear()
             window.location.href = '/login'
          }}
       >
          Sair
-      </a>
+      </button>
    </li>
 }
 
